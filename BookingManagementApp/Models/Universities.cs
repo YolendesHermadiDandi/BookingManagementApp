@@ -1,30 +1,17 @@
-﻿namespace API.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace API.Models
 {
+    [Table("tb_m_universities")]
     public class Universities : GlobalMathod
     {
 
+        [Column("code", TypeName = "nvarchar(100)")]
         public string Code { get; set; }
-        public override string Name
-        {
-            get => base.Name;
-            set => base.Name = value;
-        }
-        public override Guid Guid
-        {
-            get => base.Guid;
-            set => base.Guid = value;
-        }
+        [Column("name", TypeName = "nvarchar(100)")]
+        public string Name { get; set; }
 
-        public override DateTime CreateDate
-        {
-            get => base.CreateDate;
-            set => base.CreateDate = value;
-        }
-        public override DateTime ModifiedeDate
-        {
-            get => base.ModifiedeDate;
-            set => base.ModifiedeDate = value;
-        }
+
 
     }
 }

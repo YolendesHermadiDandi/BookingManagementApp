@@ -1,30 +1,18 @@
-﻿namespace API.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace API.Models
 {
+    [Table("tb_m_rooms")]
     public class Rooms : GlobalMathod
     {
 
-        public override Guid Guid
-        {
-            get => base.Guid;
-            set => base.Guid = value;
-        }
-        public override string Name
-        {
-            get => base.Name;
-            set => base.Name = value;
-        }
+        [Column("name", TypeName = "varchar(100)")]
+        public string Name { get; set; }
+        [Column("floor", TypeName = "int")]
         public int Floor { get; set; }
+        [Column("capacity", TypeName = "int")]
         public int Capacity { get; set; }
-        public override DateTime CreateDate
-        {
-            get => base.CreateDate;
-            set => base.CreateDate = value;
-        }
-        public override DateTime ModifiedeDate
-        {
-            get => base.ModifiedeDate;
-            set => base.ModifiedeDate = value;
-        }
+
 
     }
 }

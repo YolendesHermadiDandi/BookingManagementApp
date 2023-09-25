@@ -1,24 +1,14 @@
-﻿namespace API.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace API.Models
 {
+    [Table("tb_m_account_roles")]
     public class AccountRoles : GlobalMathod
     {
-
+        [Column("account_guid", TypeName = "uniqueidentifier")]
         public Guid AccountGuid { get; set; }
+        [Column("role_guid", TypeName = "uniqueidentifier")]
         public Guid RoleGuid { get; set; }
-        public override Guid Guid
-        {
-            get => base.Guid;
-            set => base.Guid = value;
-        }
-        public override DateTime CreateDate
-        {
-            get => base.CreateDate;
-            set => base.CreateDate = value;
-        }
-        public override DateTime ModifiedeDate
-        {
-            get => base.ModifiedeDate;
-            set => base.ModifiedeDate = value;
-        }
+       
     }
 }

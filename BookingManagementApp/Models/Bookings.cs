@@ -1,27 +1,24 @@
-﻿namespace API.Models
+﻿using API.Utilities.Enums;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace API.Models
 {
+    [Table("tb_tr_bokings")]
     public class Bookings : GlobalMathod
     {
-        public override Guid Guid
-        {
-            get => base.Guid;
-            set => base.Guid = value;
-        }
+
+        [Column("start_date", TypeName = "datetime2")]
         public DateTime StartDate { get; set; }
+        [Column("end_date", TypeName = "datetime2")]
         public DateTime EndDate { get; set; }
-        public int Status { get; set; }
+        [Column("status", TypeName = "int")]
+        public StatusLevel Status { get; set; }
+        [Column ("remarks", TypeName = "nvarchar(max)")]
         public string Remarks { get; set; }
+        [Column("room_guid", TypeName = "uniqueidentifier")]
         public Guid RoomGuid { get; set; }
+        [Column("employee_guid", TypeName = "uniqueidentifier")]
         public Guid EmployeeGuid { get; set; }
-        public override DateTime CreateDate
-        {
-            get => base.CreateDate;
-            set => base.CreateDate = value;
-        }
-        public override DateTime ModifiedeDate
-        {
-            get => base.ModifiedeDate;
-            set => base.ModifiedeDate = value;
-        }
+     
     }
 }

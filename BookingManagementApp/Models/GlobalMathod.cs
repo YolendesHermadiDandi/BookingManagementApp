@@ -1,11 +1,16 @@
-﻿namespace API.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace API.Models
 {
-    public class GlobalMathod
+    public abstract class GlobalMathod
     {
 
-        public virtual string Name { get; set; }
-        public virtual Guid Guid { get; set; }
-        public virtual DateTime CreateDate { get; set; }
-        public virtual DateTime ModifiedeDate { get; set; }
+        [Key, Column("guid")]
+        public Guid Guid { get; set; }
+        [Column("create_date")]
+        public DateTime CreateDate { get; set; }
+        [Column("modified_date")]
+        public DateTime ModifiedeDate { get; set; }
     }
 }
