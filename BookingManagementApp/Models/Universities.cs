@@ -11,7 +11,7 @@ namespace API.Models
         [Column("name", TypeName = "nvarchar(100)")]
         public string Name { get; set; }
 
-
+          
 
     }
 }
