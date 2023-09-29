@@ -13,6 +13,7 @@ namespace API.Models
         [Column("capacity", TypeName = "int")]
         public int Capacity { get; set; }
 
-
+        // Cardinality
+        public ICollection<Bookings>? Bookings { get; set; }
     }
 }

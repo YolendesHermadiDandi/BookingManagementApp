@@ -26,6 +26,63 @@ namespace API.Data
                 e.Email,
                 e.PhoneNumber
             }).IsUnique();
+
+            // One University has many Educations
+            modelBuilder.Entity<Universities>()
+                        .HasMany(e => e.Educations)
+                        .WithOne(u => u.Universities)
+                        .HasForeignKey(e => e.UniversityGuid)
+                        .OnDelete(DeleteBehavior.Restrict);
+
+            //one education has one employee
+            modelBuilder.Entity<Education>()
+                .HasOne(e => e.Employees)
+                .WithOne(e => e.Education)
+                .HasForeignKey<Education>(e => e.Guid)
+                .OnDelete(DeleteBehavior.Restrict); ;
+
+            // one employee has one account
+            modelBuilder.Entity<Employees>()
+                .HasOne(a => a.Accounts)
+                .WithOne(e => e.Employees)
+                .HasForeignKey<Employees>(e => e.Guid)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //one employee has many booking
+            modelBuilder.Entity<Employees>()
+                .HasMany(b => b.bookings)
+                .WithOne(e => e.Employees)
+                .HasForeignKey(b => b.EmployeeGuid)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //many boking has one rooms
+            modelBuilder.Entity<Bookings>()
+                .HasOne(r => r.Rooms)
+                .WithMany(b => b.Bookings)
+                .HasForeignKey(r => r.RoomGuid)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // one account has many account roles
+            modelBuilder.Entity<Accounts>()
+                .HasMany(ar => ar.AccountRoles)
+                .WithOne(a => a.Accounts)
+                .HasForeignKey(ar => ar.AccountGuid)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //many account roles has one role
+            modelBuilder.Entity<AccountRoles>()
+                .HasOne(r => r.Roles)
+                .WithMany(ar => ar.AccountRoles)
+                .HasForeignKey(ar => ar.RoleGuid)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            
+
         }
+
+
+
+
     }
 }

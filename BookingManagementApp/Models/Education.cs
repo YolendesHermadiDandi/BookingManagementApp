@@ -14,5 +14,9 @@ namespace API.Models
         [Column("university_guid", TypeName = "uniqueidentifier")]
         public Guid UniversityGuid { get; set; }
        
+
+        //cardinality
+        public Universities? Universities { get; set; }
+        public Employees? Employees { get; set; }
     }
 }

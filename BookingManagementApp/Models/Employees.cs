@@ -24,5 +24,10 @@ namespace API.Models
         [Column("phone_number", TypeName = "nvarchar(20)")]
         public string PhoneNumber { get; set; }
 
+        //cardinality
+        public Accounts? Accounts { get; set; }
+        public ICollection<Bookings>? bookings { get; set; }
+        public Education? Education { get; set; }
+
     }
 }

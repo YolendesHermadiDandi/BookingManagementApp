@@ -19,6 +19,9 @@ namespace API.Models
         public Guid RoomGuid { get; set; }
         [Column("employee_guid", TypeName = "uniqueidentifier")]
         public Guid EmployeeGuid { get; set; }
-     
+
+        // Cardinality
+        public Employees? Employees { get; set; }
+        public Rooms? Rooms { get; set; }
     }
 }
