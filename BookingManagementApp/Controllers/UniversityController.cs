@@ -73,7 +73,7 @@ public class UniversityController : ControllerBase
         return Ok(result);
     }
 
-    [HttpDelete]
+    [HttpDelete("{guid}")]
     public IActionResult Delete(Guid guid) 
     {
         var existingUniversity = _universityRepository.GetByGuid(guid); ;
