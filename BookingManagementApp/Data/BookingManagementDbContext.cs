@@ -31,15 +31,15 @@ namespace API.Data
             modelBuilder.Entity<Universities>()
                         .HasMany(e => e.Educations)
                         .WithOne(u => u.Universities)
-                        .HasForeignKey(e => e.UniversityGuid)
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey(e => e.UniversityGuid);
+                      
 
             //one education has one employee
             modelBuilder.Entity<Education>()
                 .HasOne(e => e.Employees)
                 .WithOne(e => e.Education)
-                .HasForeignKey<Education>(e => e.Guid)
-                .OnDelete(DeleteBehavior.Restrict); ;
+                .HasForeignKey<Education>(e => e.Guid);
+            
 
             // one employee has one account
             modelBuilder.Entity<Employees>()
@@ -52,29 +52,29 @@ namespace API.Data
             modelBuilder.Entity<Employees>()
                 .HasMany(b => b.bookings)
                 .WithOne(e => e.Employees)
-                .HasForeignKey(b => b.EmployeeGuid)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(b => b.EmployeeGuid);
+
 
             //many boking has one rooms
             modelBuilder.Entity<Bookings>()
                 .HasOne(r => r.Rooms)
                 .WithMany(b => b.Bookings)
-                .HasForeignKey(r => r.RoomGuid)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(r => r.RoomGuid);
+
 
             // one account has many account roles
             modelBuilder.Entity<Accounts>()
                 .HasMany(ar => ar.AccountRoles)
                 .WithOne(a => a.Accounts)
-                .HasForeignKey(ar => ar.AccountGuid)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(ar => ar.AccountGuid);
+
 
             //many account roles has one role
             modelBuilder.Entity<AccountRoles>()
                 .HasOne(r => r.Roles)
                 .WithMany(ar => ar.AccountRoles)
-                .HasForeignKey(ar => ar.RoleGuid)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(ar => ar.RoleGuid);
+          
 
 
             
