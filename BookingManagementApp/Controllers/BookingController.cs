@@ -1,5 +1,6 @@
 ﻿using API.Contracts;
 using API.Models;
+using API.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,6 +49,50 @@ namespace API.Controllers
                 return BadRequest("Failed to create data");
             }
 
+            return Ok(result);
+        }
+
+        [HttpPut("{guid}")]
+        public IActionResult Update(Guid guid, [FromBody] Bookings updateBooking)
+        {
+            var existingBooikng = _bookingRepository.GetByGuid(guid); ;
+            if (existingBooikng is null)
+            {
+                return NotFound("Id Not Found");
+            }
+
+            existingBooikng.StartDate = updateBooking.StartDate;
+            existingBooikng.EndDate = updateBooking.EndDate;
+            existingBooikng.Status = updateBooking.Status;
+            existingBooikng.Remarks = updateBooking.Remarks;
+            existingBooikng.RoomGuid = updateBooking.RoomGuid;
+            existingBooikng.EmployeeGuid = updateBooking.EmployeeGuid;
+            existingBooikng.ModifiedeDate = updateBooking.ModifiedeDate;
+
+
+            var result = _bookingRepository.Update(existingBooikng);
+            if (!result)
+            {
+                return BadRequest("Failed to update data");
+            }
+
+            return Ok(result);
+        }
+
+        [HttpDelete("{guid}")]
+        public IActionResult Delete(Guid guid)
+        {
+            var existingBooking = _bookingRepository.GetByGuid(guid); ;
+            if (existingBooking is null)
+            {
+                return NotFound("Id Not Found");
+            }
+
+            var result = _bookingRepository.Delete(existingBooking);
+            if (!result)
+            {
+                return NotFound("Delete failed");
+            }
             return Ok(result);
         }
     }
