@@ -1,5 +1,6 @@
 ﻿using API.Contracts;
 using API.Models;
+using API.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,6 +49,45 @@ namespace API.Controllers
                 return BadRequest("Failed to create data");
             }
 
+            return Ok(result);
+        }
+
+        [HttpPut("{guid}")]
+        public IActionResult Update(Guid guid, [FromBody] AccountRoles updatedAccountRole)
+        {
+            var existingAccountRole = _accountRoleRepository.GetByGuid(guid); ;
+            if (existingAccountRole is null)
+            {
+                return NotFound("Id Not Found");
+            }
+
+            existingAccountRole.AccountGuid = updatedAccountRole.AccountGuid;
+            existingAccountRole.RoleGuid = updatedAccountRole.RoleGuid;
+            existingAccountRole.ModifiedeDate = updatedAccountRole.ModifiedeDate;
+
+            var result = _accountRoleRepository.Update(existingAccountRole);
+            if (!result)
+            {
+                return BadRequest("Failed to update data");
+            }
+
+            return Ok(result);
+        }
+
+        [HttpDelete("{guid}")]
+        public IActionResult Delete(Guid guid)
+        {
+            var existingAccount = _accountRoleRepository.GetByGuid(guid); ;
+            if (existingAccount is null)
+            {
+                return NotFound("Id Not Found");
+            }
+
+            var result = _accountRoleRepository.Delete(existingAccount);
+            if (!result)
+            {
+                return NotFound("Delete failed");
+            }
             return Ok(result);
         }
     }
