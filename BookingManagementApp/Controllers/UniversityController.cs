@@ -50,21 +50,12 @@ public class UniversityController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPut("{guid}")]
-    public IActionResult Update(Guid guid, [FromBody] Universities updatedUniversity)
+    [HttpPut]
+    public IActionResult Update(Universities universities)
     {
-        var existingUniversity = _universityRepository.GetByGuid(guid); ;
-        if (existingUniversity is null)
-        {
-            return NotFound("Id Not Found");
-        }
+        
 
-        existingUniversity.Name = updatedUniversity.Name;
-        existingUniversity.Code = updatedUniversity.Code;
-        existingUniversity.ModifiedeDate = updatedUniversity.ModifiedeDate;
-
-
-        var result = _universityRepository.Update(existingUniversity);
+        var result = _universityRepository.Update(universities);
         if (!result)
         {
             return BadRequest("Failed to update data");
@@ -73,7 +64,7 @@ public class UniversityController : ControllerBase
         return Ok(result);
     }
 
-    [HttpDelete("{guid}")]
+    [HttpDelete]
     public IActionResult Delete(Guid guid) 
     {
         var existingUniversity = _universityRepository.GetByGuid(guid); ;
