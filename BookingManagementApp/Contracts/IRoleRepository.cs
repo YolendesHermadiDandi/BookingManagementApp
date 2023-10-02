@@ -2,12 +2,8 @@
 
 namespace API.Contracts
 {
-    public interface IRoleRepository
+    //class child hasil inheritance/pewarisan dari class IGeneralrepository
+    public interface IRoleRepository : IGeneralRepository<Roles>
     {
-        IEnumerable<Roles> GetAll();
-        Roles? GetByGuid(Guid guid);
-        Roles? Create(Roles roles);
-        bool Update(Roles roles);
-        bool Delete(Roles roles);
     }
 }

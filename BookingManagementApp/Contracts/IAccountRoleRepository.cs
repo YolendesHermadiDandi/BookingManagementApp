@@ -2,11 +2,7 @@
 
 namespace API.Contracts;
 
-public interface IAccountRoleRepository
+//class child hasil inheritance/pewarisan dari class IGeneralrepository
+public interface IAccountRoleRepository : IGeneralRepository<AccountRoles>
 {
-    IEnumerable<AccountRoles> GetAll();
-    AccountRoles? GetByGuid(Guid guid);
-    AccountRoles? Create(AccountRoles accountRole);
-    bool Update(AccountRoles accountRoles);
-    bool Delete(AccountRoles accountRoles);
 }

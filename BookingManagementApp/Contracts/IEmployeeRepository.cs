@@ -2,12 +2,8 @@
 
 namespace API.Contracts
 {
-    public interface IEmployeeRepository
+    //class child hasil inheritance/pewarisan dari class IGeneralrepository
+    public interface IEmployeeRepository : IGeneralRepository<Employees>
     {
-        IEnumerable<Employees> GetAll();
-        Employees? GetByGuid(Guid guid);
-        Employees? Create(Employees employees);
-        bool Update(Employees employees);
-        bool Delete(Employees employees);
     }
 }

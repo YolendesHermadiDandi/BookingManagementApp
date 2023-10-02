@@ -2,12 +2,8 @@
 
 namespace API.Contracts
 {
-    public interface IRoomRepository
+    //class child hasil inheritance/pewarisan dari class IGeneralrepository
+    public interface IRoomRepository : IGeneralRepository<Rooms>
     {
-        IEnumerable<Rooms> GetAll();
-        Rooms? GetByGuid(Guid guid);
-        Rooms? Create(Rooms rooms);
-        bool Update(Rooms rooms);
-        bool Delete(Rooms rooms);
     }
 }

@@ -2,11 +2,7 @@
 
 namespace API.Contracts;
 
-public interface IEducationyRepository
+//class child hasil inheritance/pewarisan dari class IGeneralrepository
+public interface IEducationyRepository : IGeneralRepository<Education>
 {
-    IEnumerable<Education> GetAll();
-    Education? GetByGuid(Guid guid);
-    Education? Create(Education education);
-    bool Update(Education education);
-    bool Delete(Education education);
 }

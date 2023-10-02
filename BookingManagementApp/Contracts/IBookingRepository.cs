@@ -2,11 +2,7 @@
 
 namespace API.Contracts;
 
-public interface IBookingRepository
+//class child hasil inheritance/pewarisan dari class IGeneralrepository
+public interface IBookingRepository : IGeneralRepository<Bookings>
 {
-    IEnumerable<Bookings> GetAll();
-    Bookings? GetByGuid(Guid guid);
-    Bookings? Create(Bookings bookings);
-    bool Update(Bookings bookings);
-    bool Delete(Bookings bookings);
 }

@@ -4,6 +4,7 @@ namespace API.Contracts
 {
     /* 
      * Generic class digunakan untuk membuat interface untuk semua repository
+     * class ini juga merupakan class parent dari semua class interface
      * 
      * TEntity => digunakan untuk menentukan tipe objek/class yang akan digunakan
      */
