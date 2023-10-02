@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
+
 namespace API.Models
 {
+
     [Table("tb_m_educations")]
     public class Education : GlobalMathod
     {
@@ -13,7 +15,7 @@ namespace API.Models
         public float Gpa { get; set; }
         [Column("university_guid", TypeName = "uniqueidentifier")]
         public Guid UniversityGuid { get; set; }
-       
+
 
         //cardinality
         public Universities? Universities { get; set; }

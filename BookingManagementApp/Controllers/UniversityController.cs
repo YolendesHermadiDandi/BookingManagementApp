@@ -1,6 +1,10 @@
 ﻿using API.Contracts;
+using API.DTOs.University;
 using API.Models;
+using API.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace API.Controllers;
 
@@ -24,7 +28,9 @@ public class UniversityController : ControllerBase
             return NotFound("Data Not Found");
         }
 
-        return Ok(result);
+        var data = result.Select(x => (UniversityDto)x);
+
+        return Ok(data);
     }
 
     [HttpGet("{guid}")]
@@ -35,37 +41,45 @@ public class UniversityController : ControllerBase
         {
             return NotFound("Id Not Found");
         }
-        return Ok(result);
+        return Ok((UniversityDto)result);
     }
 
     [HttpPost]
-    public IActionResult Create(Universities university)
+    public IActionResult Create(CreateUniversityDto createUniversityDto)
     {
-        var result = _universityRepository.Create(university);
+        var result = _universityRepository.Create(createUniversityDto);
         if (result is null)
         {
             return BadRequest("Failed to create data");
         }
 
-        return Ok(result);
+        return Ok((UniversityDto)result);
     }
 
-    [HttpPut]
-    public IActionResult Update(Universities universities)
-    {
-        
 
-        var result = _universityRepository.Update(universities);
+    [HttpPut]
+    public IActionResult Update(UniversityDto universityDto)
+    {
+        var entity = _universityRepository.GetByGuid(universityDto.Guid);
+        if (entity is null)
+        {
+            return NotFound("Id Not Found");
+        }
+        Universities toUpdate = universityDto;
+        toUpdate.CreateDate = entity.CreateDate;
+
+
+        var result = _universityRepository.Update(toUpdate);
         if (!result)
         {
-            return BadRequest("Failed to update data");
+            return BadRequest("failed to update data");
         }
 
-        return Ok(result);
+        return Ok("Data update success");
     }
 
     [HttpDelete]
-    public IActionResult Delete(Guid guid) 
+    public IActionResult Delete(Guid guid)
     {
         var existingUniversity = _universityRepository.GetByGuid(guid); ;
         if (existingUniversity is null)
@@ -78,6 +92,6 @@ public class UniversityController : ControllerBase
         {
             return NotFound("Delete failed");
         }
-        return Ok(result);
+        return Ok("Data deleted");
     }
 }
