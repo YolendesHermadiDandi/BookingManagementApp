@@ -1,4 +1,5 @@
 ﻿using API.Contracts;
+using API.DTOs.Booking;
 using API.Models;
 using API.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -26,7 +27,9 @@ namespace API.Controllers
                 return NotFound("Data Not Found");
             }
 
-            return Ok(result);
+            var data = result.Select(x => (BookingDto)x);
+
+            return Ok((BookingDto)result);
         }
 
         [HttpGet("{guid}")]
@@ -37,46 +40,40 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok(result);
+            return Ok((BookingDto)result);
         }
 
         [HttpPost]
-        public IActionResult Create(Bookings booking)
+        public IActionResult Create(CreateBookingDto createBookingDto)
         {
-            var result = _bookingRepository.Create(booking);
+            var result = _bookingRepository.Create(createBookingDto);
             if (result is null)
             {
                 return BadRequest("Failed to create data");
             }
 
-            return Ok(result);
+            return Ok((BookingDto)result);
         }
 
-        [HttpPut("{guid}")]
-        public IActionResult Update(Guid guid, [FromBody] Bookings updateBooking)
+        [HttpPut]
+        public IActionResult Update(BookingDto bookingDto)
         {
-            var existingBooikng = _bookingRepository.GetByGuid(guid); ;
+            var existingBooikng = _bookingRepository.GetByGuid(bookingDto.Guid); ;
             if (existingBooikng is null)
             {
                 return NotFound("Id Not Found");
             }
 
-            existingBooikng.StartDate = updateBooking.StartDate;
-            existingBooikng.EndDate = updateBooking.EndDate;
-            existingBooikng.Status = updateBooking.Status;
-            existingBooikng.Remarks = updateBooking.Remarks;
-            existingBooikng.RoomGuid = updateBooking.RoomGuid;
-            existingBooikng.EmployeeGuid = updateBooking.EmployeeGuid;
-            existingBooikng.ModifiedeDate = updateBooking.ModifiedeDate;
+            Bookings toUpdate = bookingDto;
+            toUpdate.CreateDate = existingBooikng.CreateDate;
 
-
-            var result = _bookingRepository.Update(existingBooikng);
+            var result = _bookingRepository.Update(toUpdate);
             if (!result)
             {
                 return BadRequest("Failed to update data");
             }
 
-            return Ok(result);
+            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]

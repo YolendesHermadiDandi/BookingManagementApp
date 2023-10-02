@@ -1,4 +1,5 @@
 ﻿using API.Contracts;
+using API.DTOs.Account;
 using API.Models;
 using API.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +28,9 @@ namespace API.Controllers
                 return NotFound("Data Not Found");
             }
 
-            return Ok(result);
+            var data = result.Select(x => (AccountDto)x);
+
+            return Ok(data);
         }
 
         [HttpGet("{guid}")]
@@ -38,43 +41,40 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok(result);
+            return Ok((AccountDto)result);
         }
 
         [HttpPost]
-        public IActionResult Create(Accounts accounts)
+        public IActionResult Create(CreateAccountDto createAccountDto)
         {
-            var result = _accountRepository.Create(accounts);
+            var result = _accountRepository.Create(createAccountDto);
             if (result is null)
             {
                 return BadRequest("Failed to create data");
             }
 
-            return Ok(result);
+            return Ok((AccountDto)result);
         }
 
-        [HttpPut("{guid}")]
-        public IActionResult Update(Guid guid, [FromBody] Accounts updatedAccount)
+        [HttpPut]
+        public IActionResult Update(AccountDto accountDto)
         {
-            var existingAccount = _accountRepository.GetByGuid(guid); ;
+            var existingAccount = _accountRepository.GetByGuid(accountDto.Guid);
             if (existingAccount is null)
             {
                 return NotFound("Id Not Found");
             }
 
-            existingAccount.Password = updatedAccount.Password;
-            existingAccount.IsDeleted = updatedAccount.IsDeleted;
-            existingAccount.OTP = updatedAccount.OTP;
-            existingAccount.IsUsed = updatedAccount.IsUsed;
-            existingAccount.ModifiedeDate = updatedAccount.ModifiedeDate;
+            Accounts toUpdate = accountDto;
+            toUpdate.CreateDate = existingAccount.CreateDate;
 
-            var result = _accountRepository.Update(existingAccount);
+            var result = _accountRepository.Update(toUpdate);
             if (!result)
             {
                 return BadRequest("Failed to update data");
             }
 
-            return Ok(result);
+            return Ok("Data Update Success");
         }
 
         [HttpDelete("{guid}")]

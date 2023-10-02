@@ -1,4 +1,5 @@
 ﻿using API.Contracts;
+using API.DTOs.Role;
 using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,9 @@ namespace API.Controllers
                 return NotFound("Data Not Found");
             }
 
-            return Ok(result);
+            var data = result.Select(x => (RoleDto)x);
+
+            return Ok(data);
         }
 
         [HttpGet("{guid}")]
@@ -36,40 +39,39 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok(result);
+            return Ok((RoleDto)result);
         }
 
         [HttpPost]
-        public IActionResult Create(Roles role)
+        public IActionResult Create(CreateRoleDto createRoleDto)
         {
-            var result = _roleRepository.Create(role);
+            var result = _roleRepository.Create(createRoleDto);
             if (result is null)
             {
                 return BadRequest("Failed to create data");
             }
 
-            return Ok(result);
+            return Ok((RoleDto)result);
         }
 
-        [HttpPut("{guid}")]
-        public IActionResult Update(Guid guid, [FromBody] Roles updatedRole)
+        [HttpPut]
+        public IActionResult Update(RoleDto roleDto)
         {
-            var existingRole = _roleRepository.GetByGuid(guid); ;
+            var existingRole = _roleRepository.GetByGuid(roleDto.Guid);
             if (existingRole is null)
             {
                 return NotFound("Id Not Found");
             }
+            Roles toUpdate = roleDto;
+            toUpdate.CreateDate = existingRole.CreateDate;
 
-            existingRole.Name = updatedRole.Name;
-            existingRole.ModifiedeDate = updatedRole.ModifiedeDate;
-
-            var result = _roleRepository.Update(existingRole);
+            var result = _roleRepository.Update(toUpdate);
             if (!result)
             {
                 return BadRequest("Failed to update data");
             }
 
-            return Ok(result);
+            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]

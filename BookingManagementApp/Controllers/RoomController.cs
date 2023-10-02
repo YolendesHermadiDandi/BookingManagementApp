@@ -1,4 +1,6 @@
 ﻿using API.Contracts;
+using API.DTOs.Role;
+using API.DTOs.Room;
 using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +27,9 @@ namespace API.Controllers
                 return NotFound("Data Not Found");
             }
 
-            return Ok(result);
+            var data = result.Select(x => (RoomDto)x);
+
+            return Ok(data);
         }
 
         [HttpGet("{guid}")]
@@ -36,42 +40,40 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok(result);
+            return Ok((RoomDto)result);
         }
 
         [HttpPost]
-        public IActionResult Create(Rooms rooms)
+        public IActionResult Create(CreateRoomDto createRoomDto)
         {
-            var result = _roomRepository.Create(rooms);
+            var result = _roomRepository.Create(createRoomDto);
             if (result is null)
             {
                 return BadRequest("Failed to create data");
             }
 
-            return Ok(result);
+            return Ok((RoomDto)result);
         }
 
-        [HttpPut("{guid}")]
-        public IActionResult Update(Guid guid, [FromBody] Rooms updatedRoom)
+        [HttpPut]
+        public IActionResult Update(RoomDto createRoomDto)
         {
-            var existingRoom = _roomRepository.GetByGuid(guid); ;
+            var existingRoom = _roomRepository.GetByGuid(createRoomDto.Guid);
             if (existingRoom is null)
             {
                 return NotFound("Id Not Found");
             }
 
-            existingRoom.Name = updatedRoom.Name;
-            existingRoom.Capacity = updatedRoom.Capacity;
-            existingRoom.Floor = updatedRoom.Floor;
-            existingRoom.ModifiedeDate = updatedRoom.ModifiedeDate;
+            Rooms toUpdate = createRoomDto;
+            toUpdate.CreateDate = existingRoom.CreateDate;
 
-            var result = _roomRepository.Update(existingRoom);
+            var result = _roomRepository.Update(toUpdate);
             if (!result)
             {
                 return BadRequest("Failed to update data");
             }
 
-            return Ok(result);
+            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]

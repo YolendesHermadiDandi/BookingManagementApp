@@ -1,4 +1,5 @@
 ﻿using API.Contracts;
+using API.DTOs.Educations;
 using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,9 @@ namespace API.Controllers
                 return NotFound("Data Not Found");
             }
 
-            return Ok(result);
+            var data = result.Select(x => (EducationDto)x);
+
+            return Ok(data);
         }
 
         [HttpGet("{guid}")]
@@ -36,44 +39,41 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok(result);
+            return Ok((EducationDto)result);
         }
 
         [HttpPost]
-        public IActionResult Create(Education education)
+        public IActionResult Create(CreateEducationDto createEducationDto)
         {
-            var result = _educationRepository.Create(education);
+            var result = _educationRepository.Create(createEducationDto);
             if (result is null)
             {
                 return BadRequest("Failed to create data");
             }
 
-            return Ok(result);
+            return Ok((EducationDto)result);
         }
 
-        [HttpPut("{guid}")]
-        public IActionResult Update(Guid guid, [FromBody] Education updatedEducation)
+        [HttpPut]
+        public IActionResult Update(EducationDto educationDto)
         {
-            var existingEducation = _educationRepository.GetByGuid(guid); ;
+            var existingEducation = _educationRepository.GetByGuid(educationDto.Guid); ;
             if (existingEducation is null)
             {
                 return NotFound("Id Not Found");
             }
 
-            existingEducation.Major = updatedEducation.Major;
-            existingEducation.Degree = updatedEducation.Degree;
-            existingEducation.Gpa = updatedEducation.Gpa;
-            existingEducation.UniversityGuid = updatedEducation.UniversityGuid;
-            existingEducation.ModifiedeDate = updatedEducation.ModifiedeDate;
+            Education toUpdate = educationDto;
+            toUpdate.CreateDate = existingEducation.CreateDate;
 
 
-            var result = _educationRepository.Update(existingEducation);
+            var result = _educationRepository.Update(toUpdate);
             if (!result)
             {
                 return BadRequest("Failed to update data");
             }
 
-            return Ok(result);
+            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]

@@ -1,4 +1,5 @@
 ﻿using API.Contracts;
+using API.DTOs.Employee;
 using API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,9 @@ namespace API.Controllers
                 return NotFound("Data Not Found");
             }
 
-            return Ok(result);
+            var data = result.Select(x => (EmployeeDto)x);
+
+            return Ok(data);
         }
 
         [HttpGet("{guid}")]
@@ -36,48 +39,40 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok(result);
+            return Ok((EmployeeDto)result);
         }
 
         [HttpPost]
-        public IActionResult Create(Employees employees)
+        public IActionResult Create(CreateEmployeeDto createEmployeeDto)
         {
-            var result = _employeeRepository.Create(employees);
+            var result = _employeeRepository.Create(createEmployeeDto);
             if (result is null)
             {
                 return BadRequest("Failed to create data");
             }
 
-            return Ok(result);
+            return Ok((EmployeeDto)result);
         }
 
-        [HttpPut("{guid}")]
-        public IActionResult Update(Guid guid, [FromBody] Employees updatedEmployee)
+        [HttpPut]
+        public IActionResult Update(EmployeeDto employeeDto)
         {
-            var existingEmployee = _employeeRepository.GetByGuid(guid); ;
+            var existingEmployee = _employeeRepository.GetByGuid(employeeDto.Guid);
             if (existingEmployee is null)
             {
                 return NotFound("Id Not Found");
             }
 
-            existingEmployee.Nik = updatedEmployee.Nik;
-            existingEmployee.FirstName = updatedEmployee.FirstName;
-            existingEmployee.LastName = updatedEmployee.LastName;
-            existingEmployee.BirthDate = updatedEmployee.BirthDate;
-            existingEmployee.Gender = updatedEmployee.Gender;
-            existingEmployee.HiringDate = updatedEmployee.HiringDate;
-            existingEmployee.Email = updatedEmployee.Email;
-            existingEmployee.PhoneNumber = updatedEmployee.PhoneNumber;
-            existingEmployee.ModifiedeDate = updatedEmployee.ModifiedeDate;
+            Employees toUpdate = employeeDto;
+            toUpdate.CreateDate = existingEmployee.CreateDate;
 
-
-            var result = _employeeRepository.Update(existingEmployee);
+            var result = _employeeRepository.Update(toUpdate);
             if (!result)
             {
                 return BadRequest("Failed to update data");
             }
 
-            return Ok(result);
+            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]

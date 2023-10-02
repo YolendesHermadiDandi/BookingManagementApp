@@ -1,4 +1,5 @@
 ﻿using API.Contracts;
+using API.DTOs.AccountRole;
 using API.Models;
 using API.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -26,7 +27,9 @@ namespace API.Controllers
                 return NotFound("Data Not Found");
             }
 
-            return Ok(result);
+            var data = result.Select(x => (AccountRoleDto)x);
+
+            return Ok(data);
         }
 
         [HttpGet("{guid}")]
@@ -37,41 +40,40 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok(result);
+            return Ok((AccountRoleDto)result);
         }
 
         [HttpPost]
-        public IActionResult Create(AccountRoles accountRoles)
+        public IActionResult Create(CreateAccountRoleDto createAccountRoleDto)
         {
-            var result = _accountRoleRepository.Create(accountRoles);
+            var result = _accountRoleRepository.Create(createAccountRoleDto);
             if (result is null)
             {
                 return BadRequest("Failed to create data");
             }
 
-            return Ok(result);
+            return Ok((AccountRoleDto)result);
         }
 
-        [HttpPut("{guid}")]
-        public IActionResult Update(Guid guid, [FromBody] AccountRoles updatedAccountRole)
+        [HttpPut]
+        public IActionResult Update(AccountRoleDto accountRoleDto)
         {
-            var existingAccountRole = _accountRoleRepository.GetByGuid(guid); ;
+            var existingAccountRole = _accountRoleRepository.GetByGuid(accountRoleDto.Guid); ;
             if (existingAccountRole is null)
             {
                 return NotFound("Id Not Found");
             }
 
-            existingAccountRole.AccountGuid = updatedAccountRole.AccountGuid;
-            existingAccountRole.RoleGuid = updatedAccountRole.RoleGuid;
-            existingAccountRole.ModifiedeDate = updatedAccountRole.ModifiedeDate;
+            AccountRoles toUpdate = accountRoleDto;
+            toUpdate.CreateDate = existingAccountRole.CreateDate;
 
-            var result = _accountRoleRepository.Update(existingAccountRole);
+            var result = _accountRoleRepository.Update(toUpdate);
             if (!result)
             {
                 return BadRequest("Failed to update data");
             }
 
-            return Ok(result);
+            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]
