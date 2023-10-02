@@ -7,18 +7,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    //API route
     [Route("api/[controller]")]
     [ApiController]
     public class BookingController : ControllerBase
     {
         private readonly IBookingRepository _bookingRepository;
-
+        //Constructor
         public BookingController(IBookingRepository bookingRepository)
         {
             _bookingRepository = bookingRepository;
         }
 
-        [HttpGet]
+        [HttpGet] //http request method
+        //get All data
         public IActionResult GetAll()
         {
             var result = _bookingRepository.GetAll();
@@ -33,6 +35,12 @@ namespace API.Controllers
         }
 
         [HttpGet("{guid}")]
+        /*
+        * method dibawah digunakan untuk mendapatkan data berdasarkan guid
+        * 
+        * PHARAM :
+        * - guid : primary key dari 1 baris data
+        */
         public IActionResult GetByGuid(Guid guid)
         {
             var result = _bookingRepository.GetByGuid(guid);
@@ -40,10 +48,16 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok((BookingDto)result);
+            return Ok((BookingDto)result); //konversi explisit
         }
 
         [HttpPost]
+        /*
+        * Method dibawah digunakan untuk memasukan data dengan menggunakan parameter dari method DTO
+        * 
+        * PHARAM :
+        * - createBookingDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+        */
         public IActionResult Create(CreateBookingDto createBookingDto)
         {
             var result = _bookingRepository.Create(createBookingDto);
@@ -56,6 +70,12 @@ namespace API.Controllers
         }
 
         [HttpPut]
+        /*
+       * Method dibawah digunakan untuk mengupdate data dengan menggunakan parameter dari method DTO
+       * 
+       * PHARAM :
+       * - bookingDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+       */
         public IActionResult Update(BookingDto bookingDto)
         {
             var existingBooikng = _bookingRepository.GetByGuid(bookingDto.Guid); ;
@@ -77,6 +97,12 @@ namespace API.Controllers
         }
 
         [HttpDelete("{guid}")]
+        /*
+       * Method dibawah digunakan untuk menghapus data dengan menggunakan guid
+       * 
+       * PHARAM :
+       * - guid : primary key dari 1 baris data
+       */
         public IActionResult Delete(Guid guid)
         {
             var existingBooking = _bookingRepository.GetByGuid(guid); ;

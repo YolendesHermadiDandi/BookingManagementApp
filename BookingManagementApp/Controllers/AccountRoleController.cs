@@ -7,18 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    //API route
     [Route("api/[controller]")]
     [ApiController]
     public class AccountRoleController : ControllerBase
     {
         private readonly IAccountRoleRepository _accountRoleRepository;
 
+        //Constructor
         public AccountRoleController(IAccountRoleRepository accountRoleRepository)
         {
             _accountRoleRepository = accountRoleRepository;
         }
 
-        [HttpGet]
+        [HttpGet]//http request method
+        //get All data
         public IActionResult GetAll()
         {
             var result = _accountRoleRepository.GetAll();
@@ -27,12 +30,19 @@ namespace API.Controllers
                 return NotFound("Data Not Found");
             }
 
+            //Linq
             var data = result.Select(x => (AccountRoleDto)x);
 
             return Ok(data);
         }
 
         [HttpGet("{guid}")]
+        /*
+         * method dibawah digunakan untuk mendapatkan data berdasarkan guid
+         * 
+         * PHARAM :
+         * - guid : primary key dari 1 baris data
+         */
         public IActionResult GetByGuid(Guid guid)
         {
             var result = _accountRoleRepository.GetByGuid(guid);
@@ -40,10 +50,16 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok((AccountRoleDto)result);
+            return Ok((AccountRoleDto)result); //konversi explisit
         }
 
         [HttpPost]
+        /*
+        * Method dibawah digunakan untuk memasukan data dengan menggunakan parameter dari method DTO
+        * 
+        * PHARAM :
+        * - createAccountRoleDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+        */
         public IActionResult Create(CreateAccountRoleDto createAccountRoleDto)
         {
             var result = _accountRoleRepository.Create(createAccountRoleDto);
@@ -56,6 +72,12 @@ namespace API.Controllers
         }
 
         [HttpPut]
+        /*
+        * Method dibawah digunakan untuk mengupdate data dengan menggunakan parameter dari method DTO
+        * 
+        * PHARAM :
+        * - accountRoleDto : kumpulan parameter/method yang sudah ditentukan dari class/objek account
+        */
         public IActionResult Update(AccountRoleDto accountRoleDto)
         {
             var existingAccountRole = _accountRoleRepository.GetByGuid(accountRoleDto.Guid); ;
@@ -77,6 +99,12 @@ namespace API.Controllers
         }
 
         [HttpDelete("{guid}")]
+        /*
+        * Method dibawah digunakan untuk menghapus data dengan menggunakan guid
+        * 
+        * PHARAM :
+        * - guid : primary key dari 1 baris data
+        */
         public IActionResult Delete(Guid guid)
         {
             var existingAccount = _accountRoleRepository.GetByGuid(guid); ;

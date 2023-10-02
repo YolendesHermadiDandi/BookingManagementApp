@@ -7,19 +7,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-
+    //API route
     [Route("api/[controller]")]
     [ApiController]
     public class AccountController : ControllerBase
     {
         private readonly IAccountsRepository _accountRepository;
 
+        //Constructor
         public AccountController(IAccountsRepository accountRepository)
         {
             _accountRepository = accountRepository;
         }
 
-        [HttpGet]
+        [HttpGet] //http request method
+        //get All data
         public IActionResult GetAll()
         {
             var result = _accountRepository.GetAll();
@@ -28,12 +30,19 @@ namespace API.Controllers
                 return NotFound("Data Not Found");
             }
 
+            //Linq
             var data = result.Select(x => (AccountDto)x);
 
             return Ok(data);
         }
 
         [HttpGet("{guid}")]
+        /*
+         * method dibawah digunakan untuk mendapatkan data berdasarkan guid
+         * 
+         * PHARAM :
+         * - guid : primary key dari 1 baris data
+         */
         public IActionResult GetByGuid(Guid guid)
         {
             var result = _accountRepository.GetByGuid(guid);
@@ -41,10 +50,17 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok((AccountDto)result);
+            return Ok((AccountDto)result); //konversi explisit
         }
 
         [HttpPost]
+
+        /*
+         * Method dibawah digunakan untuk memasukan data dengan menggunakan parameter dari method DTO
+         * 
+         * PHARAM :
+         * - createAccountDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+         */
         public IActionResult Create(CreateAccountDto createAccountDto)
         {
             var result = _accountRepository.Create(createAccountDto);
@@ -57,6 +73,12 @@ namespace API.Controllers
         }
 
         [HttpPut]
+        /*
+        * Method dibawah digunakan untuk mengupdate data dengan menggunakan parameter dari method DTO
+        * 
+        * PHARAM :
+        * - accountDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+        */
         public IActionResult Update(AccountDto accountDto)
         {
             var existingAccount = _accountRepository.GetByGuid(accountDto.Guid);
@@ -78,6 +100,12 @@ namespace API.Controllers
         }
 
         [HttpDelete("{guid}")]
+        /*
+        * Method dibawah digunakan untuk menghapus data dengan menggunakan guid
+        * 
+        * PHARAM :
+        * - guid : primary key dari 1 baris data
+        */
         public IActionResult Delete(Guid guid)
         {
             var existingAccount = _accountRepository.GetByGuid(guid); ;

@@ -6,18 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    //API route
     [Route("api/[controller]")]
     [ApiController]
     public class RoleController : ControllerBase
     {
         private readonly IRoleRepository _roleRepository;
 
+        //Constructor
         public RoleController(IRoleRepository roleRepository)
         {
             _roleRepository = roleRepository;
         }
 
-        [HttpGet]
+        [HttpGet] //http request method
+        //get All data
         public IActionResult GetAll()
         {
             var result = _roleRepository.GetAll();
@@ -32,6 +35,12 @@ namespace API.Controllers
         }
 
         [HttpGet("{guid}")]
+        /*
+        * method dibawah digunakan untuk mendapatkan data berdasarkan guid
+        * 
+        * PHARAM :
+        * - guid : primary key dari 1 baris data
+        */
         public IActionResult GetByGuid(Guid guid)
         {
             var result = _roleRepository.GetByGuid(guid);
@@ -39,10 +48,16 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok((RoleDto)result);
+            return Ok((RoleDto)result); //konversi explisit
         }
 
         [HttpPost]
+        /*
+         * Method dibawah digunakan untuk memasukan data dengan menggunakan parameter dari method DTO
+         * 
+         * PHARAM :
+         * - createRoleDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+         */
         public IActionResult Create(CreateRoleDto createRoleDto)
         {
             var result = _roleRepository.Create(createRoleDto);
@@ -55,6 +70,12 @@ namespace API.Controllers
         }
 
         [HttpPut]
+        /*
+      * Method dibawah digunakan untuk mengupdate data dengan menggunakan parameter dari method DTO
+      * 
+      * PHARAM :
+      * - roleDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+      */
         public IActionResult Update(RoleDto roleDto)
         {
             var existingRole = _roleRepository.GetByGuid(roleDto.Guid);
@@ -75,6 +96,12 @@ namespace API.Controllers
         }
 
         [HttpDelete("{guid}")]
+        /*
+       * Method dibawah digunakan untuk menghapus data dengan menggunakan guid
+       * 
+       * PHARAM :
+       * - guid : primary key dari 1 baris data
+       */
         public IActionResult Delete(Guid guid)
         {
             var existingRole = _roleRepository.GetByGuid(guid); ;

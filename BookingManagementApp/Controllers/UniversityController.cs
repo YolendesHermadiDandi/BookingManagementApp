@@ -9,17 +9,19 @@ using System;
 namespace API.Controllers;
 
 [ApiController]
+//API route
 [Route("api/[controller]")]
 public class UniversityController : ControllerBase
 {
     private readonly IUniversityRepository _universityRepository;
-
+    //Constructor
     public UniversityController(IUniversityRepository universityRepository)
     {
         _universityRepository = universityRepository;
     }
 
-    [HttpGet]
+    [HttpGet] //http request method
+    //get All data
     public IActionResult GetAll()
     {
         var result = _universityRepository.GetAll();
@@ -28,12 +30,19 @@ public class UniversityController : ControllerBase
             return NotFound("Data Not Found");
         }
 
+        //Linq
         var data = result.Select(x => (UniversityDto)x);
 
         return Ok(data);
     }
 
     [HttpGet("{guid}")]
+    /*
+    * method dibawah digunakan untuk mendapatkan data berdasarkan guid
+    * 
+    * PHARAM :
+    * - guid : primary key dari 1 baris data
+    */
     public IActionResult GetByGuid(Guid guid)
     {
         var result = _universityRepository.GetByGuid(guid);
@@ -41,10 +50,16 @@ public class UniversityController : ControllerBase
         {
             return NotFound("Id Not Found");
         }
-        return Ok((UniversityDto)result);
+        return Ok((UniversityDto)result); //konversi explisit
     }
 
     [HttpPost]
+    /*
+     * Method dibawah digunakan untuk memasukan data dengan menggunakan parameter dari method DTO
+     * 
+     * PHARAM :
+     * - createAccountDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+     */
     public IActionResult Create(CreateUniversityDto createUniversityDto)
     {
         var result = _universityRepository.Create(createUniversityDto);
@@ -58,6 +73,12 @@ public class UniversityController : ControllerBase
 
 
     [HttpPut]
+    /*
+     * Method dibawah digunakan untuk mengupdate data dengan menggunakan parameter dari method DTO
+     * 
+     * PHARAM :
+     * - universitytDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+     */
     public IActionResult Update(UniversityDto universityDto)
     {
         var entity = _universityRepository.GetByGuid(universityDto.Guid);
@@ -79,6 +100,12 @@ public class UniversityController : ControllerBase
     }
 
     [HttpDelete("{guid}")]
+    /*
+    * Method dibawah digunakan untuk menghapus data dengan menggunakan guid
+    * 
+    * PHARAM :
+    * - guid : primary key dari 1 baris data
+    */
     public IActionResult Delete(Guid guid)
     {
         var existingUniversity = _universityRepository.GetByGuid(guid); ;

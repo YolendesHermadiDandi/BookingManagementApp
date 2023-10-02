@@ -7,18 +7,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    //API route
     [Route("api/[controller]")]
     [ApiController]
     public class RoomController : ControllerBase
     {
         private readonly IRoomRepository _roomRepository;
-
+        //Constructor
         public RoomController(IRoomRepository roomRepository)
         {
             _roomRepository = roomRepository;
         }
 
-        [HttpGet]
+        [HttpGet] //http request method
+        //get All data
         public IActionResult GetAll()
         {
             var result = _roomRepository.GetAll();
@@ -26,13 +28,19 @@ namespace API.Controllers
             {
                 return NotFound("Data Not Found");
             }
-
+            //Linq
             var data = result.Select(x => (RoomDto)x);
 
             return Ok(data);
         }
 
         [HttpGet("{guid}")]
+        /*
+        * method dibawah digunakan untuk mendapatkan data berdasarkan guid
+        * 
+        * PHARAM :
+        * - guid : primary key dari 1 baris data
+        */
         public IActionResult GetByGuid(Guid guid)
         {
             var result = _roomRepository.GetByGuid(guid);
@@ -40,10 +48,16 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok((RoomDto)result);
+            return Ok((RoomDto)result); //konversi explisit
         }
 
         [HttpPost]
+        /*
+         * Method dibawah digunakan untuk memasukan data dengan menggunakan parameter dari method DTO
+         * 
+         * PHARAM :
+         * - createRoomDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+         */
         public IActionResult Create(CreateRoomDto createRoomDto)
         {
             var result = _roomRepository.Create(createRoomDto);
@@ -56,6 +70,12 @@ namespace API.Controllers
         }
 
         [HttpPut]
+        /*
+        * Method dibawah digunakan untuk mengupdate data dengan menggunakan parameter dari method DTO
+        * 
+        * PHARAM :
+        * - roomDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+        */
         public IActionResult Update(RoomDto createRoomDto)
         {
             var existingRoom = _roomRepository.GetByGuid(createRoomDto.Guid);
@@ -77,6 +97,12 @@ namespace API.Controllers
         }
 
         [HttpDelete("{guid}")]
+        /*
+       * Method dibawah digunakan untuk menghapus data dengan menggunakan guid
+       * 
+       * PHARAM :
+       * - guid : primary key dari 1 baris data
+       */
         public IActionResult Delete(Guid guid)
         {
             var existingRoom = _roomRepository.GetByGuid(guid); ;

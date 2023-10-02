@@ -6,18 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    //API route
     [Route("api/[controller]")]
     [ApiController]
     public class EducationController : ControllerBase
     {
         private readonly IEducationyRepository _educationRepository;
 
+        //Constructor
         public EducationController(IEducationyRepository educationRepository)
         {
             _educationRepository = educationRepository;
         }
 
-        [HttpGet]
+        [HttpGet] //http request method
+        //get All data
         public IActionResult GetAll()
         {
             var result = _educationRepository.GetAll();
@@ -25,13 +28,19 @@ namespace API.Controllers
             {
                 return NotFound("Data Not Found");
             }
-
+            //Linq
             var data = result.Select(x => (EducationDto)x);
 
             return Ok(data);
         }
 
         [HttpGet("{guid}")]
+        /*
+         * method dibawah digunakan untuk mendapatkan data berdasarkan guid
+         * 
+         * PHARAM :
+         * - guid : primary key dari 1 baris data
+         */
         public IActionResult GetByGuid(Guid guid)
         {
             var result = _educationRepository.GetByGuid(guid);
@@ -39,10 +48,16 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok((EducationDto)result);
+            return Ok((EducationDto)result); //konversi explisit
         }
 
         [HttpPost]
+        /*
+        * Method dibawah digunakan untuk memasukan data dengan menggunakan parameter dari method DTO
+        * 
+        * PHARAM :
+        * - createEducationDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+        */
         public IActionResult Create(CreateEducationDto createEducationDto)
         {
             var result = _educationRepository.Create(createEducationDto);
@@ -55,6 +70,12 @@ namespace API.Controllers
         }
 
         [HttpPut]
+        /*
+      * Method dibawah digunakan untuk mengupdate data dengan menggunakan parameter dari method DTO
+      * 
+      * PHARAM :
+      * - educationDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+      */
         public IActionResult Update(EducationDto educationDto)
         {
             var existingEducation = _educationRepository.GetByGuid(educationDto.Guid); ;
@@ -77,6 +98,12 @@ namespace API.Controllers
         }
 
         [HttpDelete("{guid}")]
+        /*
+       * Method dibawah digunakan untuk menghapus data dengan menggunakan guid
+       * 
+       * PHARAM :
+       * - guid : primary key dari 1 baris data
+       */
         public IActionResult Delete(Guid guid)
         {
             var existingEducation = _educationRepository.GetByGuid(guid); ;

@@ -6,18 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    //API route
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeRepository _employeeRepository;
 
+        //Constructor
         public EmployeeController(IEmployeeRepository employeeRepository)
         {
             _employeeRepository = employeeRepository;
         }
 
-        [HttpGet]
+        [HttpGet] //http request method
+        //get All data
         public IActionResult GetAll()
         {
             var result = _employeeRepository.GetAll();
@@ -25,13 +28,19 @@ namespace API.Controllers
             {
                 return NotFound("Data Not Found");
             }
-
+            //Linq
             var data = result.Select(x => (EmployeeDto)x);
 
             return Ok(data);
         }
 
         [HttpGet("{guid}")]
+        /*
+        * method dibawah digunakan untuk mendapatkan data berdasarkan guid
+        * 
+        * PHARAM :
+        * - guid : primary key dari 1 baris data
+        */
         public IActionResult GetByGuid(Guid guid)
         {
             var result = _employeeRepository.GetByGuid(guid);
@@ -39,10 +48,16 @@ namespace API.Controllers
             {
                 return NotFound("Id Not Found");
             }
-            return Ok((EmployeeDto)result);
+            return Ok((EmployeeDto)result); //konversi explisit
         }
 
         [HttpPost]
+        /*
+        * Method dibawah digunakan untuk memasukan data dengan menggunakan parameter dari method DTO
+        * 
+        * PHARAM :
+        * - createEmployeeDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+        */
         public IActionResult Create(CreateEmployeeDto createEmployeeDto)
         {
             var result = _employeeRepository.Create(createEmployeeDto);
@@ -55,6 +70,12 @@ namespace API.Controllers
         }
 
         [HttpPut]
+        /*
+        * Method dibawah digunakan untuk mengupdate data dengan menggunakan parameter dari method DTO
+        * 
+        * PHARAM :
+        * - employeeDto : kumpulan parameter/method yang sudah ditentukan dari suatu class/objek
+        */
         public IActionResult Update(EmployeeDto employeeDto)
         {
             var existingEmployee = _employeeRepository.GetByGuid(employeeDto.Guid);
@@ -76,6 +97,12 @@ namespace API.Controllers
         }
 
         [HttpDelete("{guid}")]
+        /*
+       * Method dibawah digunakan untuk menghapus data dengan menggunakan guid
+       * 
+       * PHARAM :
+       * - guid : primary key dari 1 baris data
+       */
         public IActionResult Delete(Guid guid)
         {
             var existingEmployee = _employeeRepository.GetByGuid(guid); ;
