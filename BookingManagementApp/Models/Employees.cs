@@ -8,7 +8,7 @@ namespace API.Models
     {
 
         [Column("nik", TypeName = "nchar(6)")]
-        public char Nik { get; set; }
+        public string Nik { get; set; }
         [Column("first_name", TypeName = "nvarchar(100)")]
         public string FirstName { get; set; }
         [Column("last_name", TypeName = "nvarchar(100)")]

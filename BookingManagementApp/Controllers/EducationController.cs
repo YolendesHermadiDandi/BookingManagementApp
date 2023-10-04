@@ -1,8 +1,11 @@
 ﻿using API.Contracts;
+using API.DTOs.Account;
 using API.DTOs.Educations;
 using API.Models;
+using API.Utilities.Handler;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace API.Controllers
 {
@@ -26,12 +29,17 @@ namespace API.Controllers
             var result = _educationRepository.GetAll();
             if (!result.Any())
             {
-                return NotFound("Data Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
             //Linq
             var data = result.Select(x => (EducationDto)x);
 
-            return Ok(data);
+            return Ok(new ResponseOkHandler<IEnumerable<EducationDto>>(data));
         }
 
         [HttpGet("{guid}")]
@@ -46,9 +54,14 @@ namespace API.Controllers
             var result = _educationRepository.GetByGuid(guid);
             if (result is null)
             {
-                return NotFound("Id Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
-            return Ok((EducationDto)result); //konversi explisit
+            return Ok(new ResponseOkHandler<EducationDto>((EducationDto)result)); //konversi explisit
         }
 
         [HttpPost]
@@ -60,13 +73,21 @@ namespace API.Controllers
         */
         public IActionResult Create(CreateEducationDto createEducationDto)
         {
-            var result = _educationRepository.Create(createEducationDto);
-            if (result is null)
+            try
             {
-                return BadRequest("Failed to create data");
+                var result = _educationRepository.Create(createEducationDto);
+                return Ok(new ResponseOkHandler<EducationDto>((EducationDto)result));
             }
-
-            return Ok((EducationDto)result);
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO CREATE DATA"
+                 });
+            }
         }
 
         [HttpPut]
@@ -78,23 +99,37 @@ namespace API.Controllers
       */
         public IActionResult Update(EducationDto educationDto)
         {
-            var existingEducation = _educationRepository.GetByGuid(educationDto.Guid); ;
-            if (existingEducation is null)
+            try
             {
-                return NotFound("Id Not Found");
+                var existingEducation = _educationRepository.GetByGuid(educationDto.Guid); ;
+                if (existingEducation is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "Data NOT FOUND"
+                    });
+                }
+
+                Education toUpdate = educationDto;
+                toUpdate.CreateDate = existingEducation.CreateDate;
+
+
+                var result = _educationRepository.Update(toUpdate);
+
+                return Ok(new ResponseOkHandler<string>("DATA UPDATED"));
             }
-
-            Education toUpdate = educationDto;
-            toUpdate.CreateDate = existingEducation.CreateDate;
-
-
-            var result = _educationRepository.Update(toUpdate);
-            if (!result)
+            catch (Exception ex)
             {
-                return BadRequest("Failed to update data");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO CREATE DATA"
+                 });
             }
-
-            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]
@@ -106,18 +141,32 @@ namespace API.Controllers
        */
         public IActionResult Delete(Guid guid)
         {
-            var existingEducation = _educationRepository.GetByGuid(guid); ;
-            if (existingEducation is null)
+            try
             {
-                return NotFound("Id Not Found");
-            }
+                var existingEducation = _educationRepository.GetByGuid(guid); ;
+                if (existingEducation is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "Data NOT FOUND"
+                    });
+                }
 
-            var result = _educationRepository.Delete(existingEducation);
-            if (!result)
-            {
-                return NotFound("Delete failed");
+                var result = _educationRepository.Delete(existingEducation);
+                return Ok(new ResponseOkHandler<string>("DATA DELETED"));
             }
-            return Ok(result);
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO CREATE DATA"
+                 });
+            }
         }
     }
 }

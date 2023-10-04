@@ -1,8 +1,11 @@
 ﻿using API.Contracts;
+using API.DTOs.Account;
 using API.DTOs.Employee;
 using API.Models;
+using API.Utilities.Handler;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace API.Controllers
 {
@@ -26,12 +29,17 @@ namespace API.Controllers
             var result = _employeeRepository.GetAll();
             if (!result.Any())
             {
-                return NotFound("Data Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
             //Linq
             var data = result.Select(x => (EmployeeDto)x);
 
-            return Ok(data);
+            return Ok(new ResponseOkHandler<IEnumerable<EmployeeDto>>(data));
         }
 
         [HttpGet("{guid}")]
@@ -46,9 +54,14 @@ namespace API.Controllers
             var result = _employeeRepository.GetByGuid(guid);
             if (result is null)
             {
-                return NotFound("Id Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
-            return Ok((EmployeeDto)result); //konversi explisit
+            return Ok(new ResponseOkHandler<EmployeeDto>((EmployeeDto)result)); //konversi explisit
         }
 
         [HttpPost]
@@ -60,13 +73,27 @@ namespace API.Controllers
         */
         public IActionResult Create(CreateEmployeeDto createEmployeeDto)
         {
-            var result = _employeeRepository.Create(createEmployeeDto);
-            if (result is null)
+            try
             {
-                return BadRequest("Failed to create data");
+
+
+                Employees toCreate = createEmployeeDto;
+                toCreate.Nik = GenerateHandler.GenerateNik(_employeeRepository.GetLastNik());
+                var result = _employeeRepository.Create(toCreate);
+
+                return Ok(new ResponseOkHandler<EmployeeDto>((EmployeeDto)result));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO CREATE DATA"
+                 });
             }
 
-            return Ok((EmployeeDto)result);
         }
 
         [HttpPut]
@@ -78,22 +105,35 @@ namespace API.Controllers
         */
         public IActionResult Update(EmployeeDto employeeDto)
         {
-            var existingEmployee = _employeeRepository.GetByGuid(employeeDto.Guid);
-            if (existingEmployee is null)
+            try
             {
-                return NotFound("Id Not Found");
+                var existingEmployee = _employeeRepository.GetByGuid(employeeDto.Guid);
+                if (existingEmployee is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "ID NOT FOUND"
+                    });
+                }
+
+                Employees toUpdate = employeeDto;
+                toUpdate.CreateDate = existingEmployee.CreateDate;
+
+                var result = _employeeRepository.Update(toUpdate);
+                return Ok(new ResponseOkHandler<string>("DATA UPDATED"));
             }
-
-            Employees toUpdate = employeeDto;
-            toUpdate.CreateDate = existingEmployee.CreateDate;
-
-            var result = _employeeRepository.Update(toUpdate);
-            if (!result)
+            catch (Exception ex)
             {
-                return BadRequest("Failed to update data");
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "FAIL TO UPDATE DATA",
+                    Error = ex.Message
+                });
             }
-
-            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]
@@ -105,18 +145,32 @@ namespace API.Controllers
        */
         public IActionResult Delete(Guid guid)
         {
-            var existingEmployee = _employeeRepository.GetByGuid(guid); ;
-            if (existingEmployee is null)
+            try
             {
-                return NotFound("Id Not Found");
-            }
+                var existingEmployee = _employeeRepository.GetByGuid(guid); ;
+                if (existingEmployee is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "ID NOT FOUND"
+                    });
+                }
 
-            var result = _employeeRepository.Delete(existingEmployee);
-            if (!result)
-            {
-                return NotFound("Delete failed");
+                var result = _employeeRepository.Delete(existingEmployee);
+                return Ok(new ResponseOkHandler<string>("DATA DELETED"));
             }
-            return Ok(result);
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO DELETE DATA"
+                 });
+            }
         }
     }
 }

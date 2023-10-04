@@ -1,9 +1,12 @@
 ﻿using API.Contracts;
 using API.DTOs.Account;
+using API.DTOs.Employee;
 using API.Models;
 using API.Repositories;
+using API.Utilities.Handler;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace API.Controllers
 {
@@ -27,13 +30,17 @@ namespace API.Controllers
             var result = _accountRepository.GetAll();
             if (!result.Any())
             {
-                return NotFound("Data Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
 
             //Linq
             var data = result.Select(x => (AccountDto)x);
-
-            return Ok(data);
+            return Ok(new ResponseOkHandler<IEnumerable<AccountDto>>(data));
         }
 
         [HttpGet("{guid}")]
@@ -48,9 +55,14 @@ namespace API.Controllers
             var result = _accountRepository.GetByGuid(guid);
             if (result is null)
             {
-                return NotFound("Id Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
-            return Ok((AccountDto)result); //konversi explisit
+            return Ok(new ResponseOkHandler<AccountDto>((AccountDto)result)); //konversi explisit
         }
 
         [HttpPost]
@@ -63,13 +75,23 @@ namespace API.Controllers
          */
         public IActionResult Create(CreateAccountDto createAccountDto)
         {
-            var result = _accountRepository.Create(createAccountDto);
-            if (result is null)
+            try
             {
-                return BadRequest("Failed to create data");
+                Accounts toCreate = createAccountDto;
+                toCreate.Password = HashHandler.HashPassword(createAccountDto.Password);
+                var result = _accountRepository.Create(toCreate);
+                return Ok(new ResponseOkHandler<AccountDto>((AccountDto)result));
             }
-
-            return Ok((AccountDto)result);
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status500InternalServerError,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "FAILED TO CREATE DATA"
+                    });
+            }
         }
 
         [HttpPut]
@@ -81,22 +103,38 @@ namespace API.Controllers
         */
         public IActionResult Update(AccountDto accountDto)
         {
-            var existingAccount = _accountRepository.GetByGuid(accountDto.Guid);
-            if (existingAccount is null)
+            try
             {
-                return NotFound("Id Not Found");
+                var existingAccount = _accountRepository.GetByGuid(accountDto.Guid);
+                if (existingAccount is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "ID NOT FOUND"
+                    });
+                }
+
+                Accounts toUpdate = accountDto;
+                toUpdate.CreateDate = existingAccount.CreateDate;
+                toUpdate.Password = HashHandler.HashPassword(accountDto.Password);
+
+                var result = _accountRepository.Update(toUpdate);
+
+                return Ok(new ResponseOkHandler<string>("DATA UPDATED"));
             }
-
-            Accounts toUpdate = accountDto;
-            toUpdate.CreateDate = existingAccount.CreateDate;
-
-            var result = _accountRepository.Update(toUpdate);
-            if (!result)
+            catch (Exception ex)
             {
-                return BadRequest("Failed to update data");
-            }
+                return BadRequest(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status400BadRequest,
+                    Status = HttpStatusCode.BadRequest.ToString(),
+                    Message = "Failed to update data"
 
-            return Ok("Data Update Success");
+
+                });
+            }
         }
 
         [HttpDelete("{guid}")]
@@ -108,18 +146,32 @@ namespace API.Controllers
         */
         public IActionResult Delete(Guid guid)
         {
-            var existingAccount = _accountRepository.GetByGuid(guid); ;
-            if (existingAccount is null)
+            try
             {
-                return NotFound("Id Not Found");
+                var existingAccount = _accountRepository.GetByGuid(guid); ;
+                if (existingAccount is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "ID NOT FOUND"
+                    });
+                }
+                var result = _accountRepository.Delete(existingAccount);
+                return Ok(new ResponseOkHandler<string>("DATA DELETED"));
             }
+            catch (Exception ex)
+            {
+                return BadRequest(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status400BadRequest,
+                    Status = HttpStatusCode.BadRequest.ToString(),
+                    Message = "FAILED TO DELETED DATA"
 
-            var result = _accountRepository.Delete(existingAccount);
-            if (!result)
-            {
-                return NotFound("Delete failed");
+
+                });
             }
-            return Ok(result);
         }
 
     }

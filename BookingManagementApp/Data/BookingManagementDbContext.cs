@@ -22,8 +22,16 @@ namespace API.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Employees>().HasIndex(e => new
             {
-                e.Nik,
-                e.Email,
+                e.Nik
+            }).IsUnique();
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Employees>().HasIndex(e => new
+            {
+                e.Email
+            }).IsUnique();
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Employees>().HasIndex(e => new
+            {
                 e.PhoneNumber
             }).IsUnique();
 
@@ -32,20 +40,20 @@ namespace API.Data
                         .HasMany(e => e.Educations)
                         .WithOne(u => u.Universities)
                         .HasForeignKey(e => e.UniversityGuid);
-                      
+
 
             //one education has one employee
             modelBuilder.Entity<Education>()
                 .HasOne(e => e.Employees)
                 .WithOne(e => e.Education)
                 .HasForeignKey<Education>(e => e.Guid);
-            
+
 
             // one employee has one account
             modelBuilder.Entity<Employees>()
                 .HasOne(a => a.Accounts)
                 .WithOne(e => e.Employees)
-                .HasForeignKey<Employees>(e => e.Guid)
+                .HasForeignKey<Accounts>(a => a.Guid)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //one employee has many booking
@@ -74,10 +82,10 @@ namespace API.Data
                 .HasOne(r => r.Roles)
                 .WithMany(ar => ar.AccountRoles)
                 .HasForeignKey(ar => ar.RoleGuid);
-          
 
 
-            
+
+
 
         }
 

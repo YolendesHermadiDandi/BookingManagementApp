@@ -9,7 +9,7 @@ namespace API.DTOs.Employee
 
         //setter getter
         public Guid Guid { get; set; }
-        public char Nik { get; set; }
+        public string Nik { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime BirthDate { get; set; }

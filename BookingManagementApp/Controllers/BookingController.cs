@@ -1,9 +1,12 @@
 ﻿using API.Contracts;
+using API.DTOs.Account;
 using API.DTOs.Booking;
 using API.Models;
 using API.Repositories;
+using API.Utilities.Handler;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace API.Controllers
 {
@@ -26,12 +29,17 @@ namespace API.Controllers
             var result = _bookingRepository.GetAll();
             if (!result.Any())
             {
-                return NotFound("Data Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
 
             var data = result.Select(x => (BookingDto)x);
 
-            return Ok((BookingDto)result);
+            return Ok(new ResponseOkHandler<IEnumerable<BookingDto>>(data));
         }
 
         [HttpGet("{guid}")]
@@ -46,9 +54,14 @@ namespace API.Controllers
             var result = _bookingRepository.GetByGuid(guid);
             if (result is null)
             {
-                return NotFound("Id Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
-            return Ok((BookingDto)result); //konversi explisit
+            return Ok(new ResponseOkHandler<BookingDto>((BookingDto)result)); //konversi explisit
         }
 
         [HttpPost]
@@ -60,13 +73,21 @@ namespace API.Controllers
         */
         public IActionResult Create(CreateBookingDto createBookingDto)
         {
-            var result = _bookingRepository.Create(createBookingDto);
-            if (result is null)
+            try
             {
-                return BadRequest("Failed to create data");
+                var result = _bookingRepository.Create(createBookingDto);
+                return Ok(new ResponseOkHandler<BookingDto>((BookingDto)result));
             }
-
-            return Ok((BookingDto)result);
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO CREATE DATA"
+                 });
+            }
         }
 
         [HttpPut]
@@ -78,22 +99,36 @@ namespace API.Controllers
        */
         public IActionResult Update(BookingDto bookingDto)
         {
-            var existingBooikng = _bookingRepository.GetByGuid(bookingDto.Guid); ;
-            if (existingBooikng is null)
+            try
             {
-                return NotFound("Id Not Found");
+
+                var existingBooikng = _bookingRepository.GetByGuid(bookingDto.Guid); ;
+                if (existingBooikng is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "Data NOT FOUND"
+                    });
+                }
+
+                Bookings toUpdate = bookingDto;
+                toUpdate.CreateDate = existingBooikng.CreateDate;
+
+                var result = _bookingRepository.Update(toUpdate);
+                return Ok(new ResponseOkHandler<string>("DATA UPDATED"));
             }
-
-            Bookings toUpdate = bookingDto;
-            toUpdate.CreateDate = existingBooikng.CreateDate;
-
-            var result = _bookingRepository.Update(toUpdate);
-            if (!result)
+            catch (Exception ex)
             {
-                return BadRequest("Failed to update data");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO UPDATE DATA"
+                 });
             }
-
-            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]
@@ -105,18 +140,32 @@ namespace API.Controllers
        */
         public IActionResult Delete(Guid guid)
         {
-            var existingBooking = _bookingRepository.GetByGuid(guid); ;
-            if (existingBooking is null)
+            try
             {
-                return NotFound("Id Not Found");
-            }
+                var existingBooking = _bookingRepository.GetByGuid(guid); ;
+                if (existingBooking is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "ID NOT FOUND"
+                    });
+                }
 
-            var result = _bookingRepository.Delete(existingBooking);
-            if (!result)
-            {
-                return NotFound("Delete failed");
+                var result = _bookingRepository.Delete(existingBooking);
+                return Ok(new ResponseOkHandler<string>("DATA DELETED"));
             }
-            return Ok(result);
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO DELETE DATA"
+                 });
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(BookingManagementDbContext))]
-    partial class BookingManagementDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231003051050_employee-relasi-update")]
+    partial class employeerelasiupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -235,13 +237,7 @@ namespace API.Migrations
 
                     b.HasKey("Guid");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("Nik")
-                        .IsUnique();
-
-                    b.HasIndex("PhoneNumber")
+                    b.HasIndex("Nik", "Email", "PhoneNumber")
                         .IsUnique();
 
                     b.ToTable("tb_m_employees");

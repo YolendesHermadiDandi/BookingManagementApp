@@ -1,9 +1,12 @@
 ﻿using API.Contracts;
+using API.DTOs.Account;
 using API.DTOs.AccountRole;
 using API.Models;
 using API.Repositories;
+using API.Utilities.Handler;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace API.Controllers
 {
@@ -27,13 +30,18 @@ namespace API.Controllers
             var result = _accountRoleRepository.GetAll();
             if (!result.Any())
             {
-                return NotFound("Data Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
 
             //Linq
             var data = result.Select(x => (AccountRoleDto)x);
 
-            return Ok(data);
+            return Ok(new ResponseOkHandler<IEnumerable<AccountRoleDto>>(data));
         }
 
         [HttpGet("{guid}")]
@@ -48,9 +56,14 @@ namespace API.Controllers
             var result = _accountRoleRepository.GetByGuid(guid);
             if (result is null)
             {
-                return NotFound("Id Not Found");
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
             }
-            return Ok((AccountRoleDto)result); //konversi explisit
+            return Ok(new ResponseOkHandler<AccountRoleDto>((AccountRoleDto)result)); //konversi explisit
         }
 
         [HttpPost]
@@ -62,13 +75,22 @@ namespace API.Controllers
         */
         public IActionResult Create(CreateAccountRoleDto createAccountRoleDto)
         {
-            var result = _accountRoleRepository.Create(createAccountRoleDto);
-            if (result is null)
+            try
             {
-                return BadRequest("Failed to create data");
+                var result = _accountRoleRepository.Create(createAccountRoleDto);
+                return Ok(new ResponseOkHandler<AccountRoleDto>((AccountRoleDto)result));
             }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                  new ResponseErrorHandler
+                  {
+                      Code = StatusCodes.Status500InternalServerError,
+                      Status = HttpStatusCode.NotFound.ToString(),
+                      Message = "FAILED TO CREATE DATA"
+                  });
 
-            return Ok((AccountRoleDto)result);
+            }
         }
 
         [HttpPut]
@@ -80,22 +102,36 @@ namespace API.Controllers
         */
         public IActionResult Update(AccountRoleDto accountRoleDto)
         {
-            var existingAccountRole = _accountRoleRepository.GetByGuid(accountRoleDto.Guid); ;
-            if (existingAccountRole is null)
+            try
             {
-                return NotFound("Id Not Found");
+
+
+                var existingAccountRole = _accountRoleRepository.GetByGuid(accountRoleDto.Guid); ;
+                if (existingAccountRole is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "Data NOT FOUND"
+                    });
+                }
+
+                AccountRoles toUpdate = accountRoleDto;
+                toUpdate.CreateDate = existingAccountRole.CreateDate;
+
+                var result = _accountRoleRepository.Update(toUpdate);
+                return Ok(new ResponseOkHandler<string>("DATA UPDATED"));
             }
-
-            AccountRoles toUpdate = accountRoleDto;
-            toUpdate.CreateDate = existingAccountRole.CreateDate;
-
-            var result = _accountRoleRepository.Update(toUpdate);
-            if (!result)
+            catch (Exception ex)
             {
-                return BadRequest("Failed to update data");
+                return BadRequest(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status400BadRequest,
+                    Status = HttpStatusCode.BadRequest.ToString(),
+                    Message = "Failed to update data"
+                });
             }
-
-            return Ok("Data update success");
         }
 
         [HttpDelete("{guid}")]
@@ -107,18 +143,31 @@ namespace API.Controllers
         */
         public IActionResult Delete(Guid guid)
         {
-            var existingAccount = _accountRoleRepository.GetByGuid(guid); ;
-            if (existingAccount is null)
+            try
             {
-                return NotFound("Id Not Found");
-            }
+                var existingAccount = _accountRoleRepository.GetByGuid(guid); ;
+                if (existingAccount is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "ID NOT FOUND"
+                    });
+                }
 
-            var result = _accountRoleRepository.Delete(existingAccount);
-            if (!result)
-            {
-                return NotFound("Delete failed");
+                var result = _accountRoleRepository.Delete(existingAccount);
+                return Ok(new ResponseOkHandler<string>("DATA DELETED"));
             }
-            return Ok(result);
+            catch (Exception ex)
+            {
+                return BadRequest(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status400BadRequest,
+                    Status = HttpStatusCode.BadRequest.ToString(),
+                    Message = "Failed to delete data"
+                });
+            }
         }
     }
 }

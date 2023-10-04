@@ -1,7 +1,9 @@
 ﻿using API.Contracts;
+using API.DTOs.Account;
 using API.DTOs.Role;
 using API.DTOs.Room;
 using API.Models;
+using API.Utilities.Handler;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,12 +28,12 @@ namespace API.Controllers
             var result = _roomRepository.GetAll();
             if (!result.Any())
             {
-                return NotFound("Data Not Found");
+                return NotFound(new ResponseDataNotFoundHandler("Data NOT FOUND"));
             }
             //Linq
             var data = result.Select(x => (RoomDto)x);
 
-            return Ok(data);
+            return Ok(new ResponseOkHandler<IEnumerable<RoomDto>>(data));
         }
 
         [HttpGet("{guid}")]
@@ -46,9 +48,9 @@ namespace API.Controllers
             var result = _roomRepository.GetByGuid(guid);
             if (result is null)
             {
-                return NotFound("Id Not Found");
+                return NotFound(new ResponseDataNotFoundHandler("Data NOT FOUND"));
             }
-            return Ok((RoomDto)result); //konversi explisit
+            return Ok(new ResponseOkHandler<RoomDto>((RoomDto)result)); //konversi explisit
         }
 
         [HttpPost]
@@ -60,13 +62,18 @@ namespace API.Controllers
          */
         public IActionResult Create(CreateRoomDto createRoomDto)
         {
-            var result = _roomRepository.Create(createRoomDto);
-            if (result is null)
+            try
             {
-                return BadRequest("Failed to create data");
-            }
 
-            return Ok((RoomDto)result);
+
+                var result = _roomRepository.Create(createRoomDto);
+                return Ok(new ResponseOkHandler<RoomDto>((RoomDto)result));
+            }
+            catch (ExceptionHandler ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new ResponseInternalServerErrorHandler("FAILED TO CREATE DATA", ex));
+            }
         }
 
         [HttpPut]
@@ -81,20 +88,16 @@ namespace API.Controllers
             var existingRoom = _roomRepository.GetByGuid(createRoomDto.Guid);
             if (existingRoom is null)
             {
-                return NotFound("Id Not Found");
+                return NotFound(new ResponseDataNotFoundHandler("ID NOT FOUND"));
             }
 
             Rooms toUpdate = createRoomDto;
             toUpdate.CreateDate = existingRoom.CreateDate;
 
             var result = _roomRepository.Update(toUpdate);
-            if (!result)
-            {
-                return BadRequest("Failed to update data");
-            }
-
-            return Ok("Data update success");
+            return Ok(new ResponseOkHandler<string>("DATA UPDATED"));
         }
+
 
         [HttpDelete("{guid}")]
         /*
@@ -105,18 +108,22 @@ namespace API.Controllers
        */
         public IActionResult Delete(Guid guid)
         {
-            var existingRoom = _roomRepository.GetByGuid(guid); ;
-            if (existingRoom is null)
+            try
             {
-                return NotFound("Id Not Found");
-            }
+                var existingRoom = _roomRepository.GetByGuid(guid); ;
+                if (existingRoom is null)
+                {
+                    return NotFound(new ResponseDataNotFoundHandler("ID NOT FOUND"));
+                }
 
-            var result = _roomRepository.Delete(existingRoom);
-            if (!result)
-            {
-                return NotFound("Delete failed");
+                var result = _roomRepository.Delete(existingRoom);
+                return Ok(new ResponseOkHandler<string>("DATA DELETED"));
             }
-            return Ok(result);
+            catch (ExceptionHandler ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new ResponseInternalServerErrorHandler("FAILED TO DELETED DATA", ex));
+            }
         }
     }
 }
