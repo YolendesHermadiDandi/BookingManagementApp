@@ -16,7 +16,7 @@ namespace API.Utilities.Validations.Accounts
              */
             RuleFor(a => a.Password)
                      .NotEmpty()
-                     .MinimumLength(8)
+                     .MinimumLength(8)        
                      .Matches(@"[A-Z]+").WithMessage("Your password must contain at least one uppercase letter.")
                      .Matches(@"[a-z]+").WithMessage("Your password must contain at least one lowercase letter.")
                      .Matches(@"[0-9]+").WithMessage("Your password must contain at least one number.")

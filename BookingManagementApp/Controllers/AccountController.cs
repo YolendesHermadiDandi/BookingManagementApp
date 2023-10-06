@@ -6,7 +6,10 @@ using API.Repositories;
 using API.Utilities.Handler;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Net;
+using System.Security.Cryptography;
+using System.Transactions;
 
 namespace API.Controllers
 {
@@ -16,11 +19,23 @@ namespace API.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountsRepository _accountRepository;
+        private readonly IEmployeeRepository _employeeRepository;
+        private readonly IEducationyRepository _educationRepository;
+        private readonly IUniversityRepository _universityRepository;
+        private readonly IEmailHandlerRepository _emailHandlerRepository;
 
         //Constructor
-        public AccountController(IAccountsRepository accountRepository)
+        public AccountController(IAccountsRepository accountRepository,
+                                 IEmployeeRepository employeeRepository,
+                                 IEducationyRepository educationyRepository,
+                                 IUniversityRepository universityRepository,
+                                 IEmailHandlerRepository emailHandlerRepository)
         {
             _accountRepository = accountRepository;
+            _employeeRepository = employeeRepository;
+            _educationRepository = educationyRepository;
+            _universityRepository = universityRepository;
+            _emailHandlerRepository = emailHandlerRepository;
         }
 
         [HttpGet] //http request method
@@ -42,6 +57,214 @@ namespace API.Controllers
             var data = result.Select(x => (AccountDto)x);
             return Ok(new ResponseOkHandler<IEnumerable<AccountDto>>(data));
         }
+
+
+        [HttpPut("ForgotPassword")]
+        public IActionResult ForgotPassword(string email)
+        {
+            try
+            {
+                Random random = new Random();
+                var existingEmployee = _employeeRepository.GetEmail(email);
+                if (existingEmployee is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "EMAIL NOT FOUND"
+                    });
+                }
+
+                var existingEmployeeAccount = _accountRepository.GetByGuid(existingEmployee.Guid);
+
+                Accounts toUpdate = existingEmployeeAccount;
+                toUpdate.OTP = random.Next(111111, 999999);
+                toUpdate.IsUsed = false;
+                toUpdate.ExpiredTime = DateTime.Now.AddMinutes(5);
+
+                var result = _accountRepository.Update(toUpdate);
+                
+
+                var employee = _employeeRepository.GetAll();
+                var account = _accountRepository.GetAll();
+
+                var forgotPassword = from emp in employee
+                                     join acc in account on emp.Guid equals acc.Guid
+                                     where emp.Email == email
+                                     select new ForgotPasswordAccountDto
+                                     {
+                                         Otp = acc.OTP,
+                                         Message = "OTP hanya berlaku 5 menit"
+                                     };
+                _emailHandlerRepository.Send("Forgot Password", $"Yout OTP is {toUpdate.OTP}", email);
+                return Ok(new ResponseOkHandler<IEnumerable<ForgotPasswordAccountDto>>(forgotPassword, "Success send OTP"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "FAIL TO UPDATE DATA",
+                    Error = ex.Message
+                });
+            }
+
+        }
+
+        [HttpPut("ChangePassword")]
+        public IActionResult ChangePassword(ChangePasswordDto changePasswordDto)
+        {
+            try
+            {
+                var existingEmployee = _employeeRepository.GetEmail(changePasswordDto.Email);
+                if (existingEmployee is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "EMAIL NOT FOUND"
+                    });
+                }
+
+                var existingEmployeeAccount = _accountRepository.GetByGuid(existingEmployee.Guid);
+
+                Accounts toUpdate = existingEmployeeAccount;
+                if (existingEmployeeAccount.ExpiredTime < DateTime.Now)
+                {
+
+                    toUpdate.IsUsed = true;
+                    var result = _accountRepository.Update(toUpdate);
+                    return Ok(new ResponseOkHandler<string>("OTP EXPIRED"));
+                }
+
+                if (changePasswordDto.NewPassword != changePasswordDto.ConfirmPassword)
+                {
+                    return Ok(new ResponseOkHandler<string>("PASSWORD NOT MATCH"));
+                }
+
+                if (existingEmployeeAccount.OTP != changePasswordDto.Otp || existingEmployeeAccount.OTP == 0)
+                {
+
+                    return Ok(new ResponseOkHandler<string>("OTP NOT MATCH"));
+                }
+
+                toUpdate.OTP = 0;
+                toUpdate.IsUsed = false;
+                toUpdate.ExpiredTime = existingEmployeeAccount.ExpiredTime;
+                toUpdate.Password = HashHandler.HashPassword(changePasswordDto.NewPassword);
+
+                var update = _accountRepository.Update(toUpdate);
+
+                return Ok(new ResponseOkHandler<string>("CHANGE PASSWORD SUCCESS"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "FAIL TO UPDATE DATA",
+                    Error = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("Register")]
+        public IActionResult Register(RegisterAccoutDto registerAccoutDto)
+        {
+            using (TransactionScope transaction = new TransactionScope())
+            {
+                try
+                {
+
+                    if (registerAccoutDto.Password != registerAccoutDto.ConfirmPassword)
+                    {
+                        return Ok(new ResponseOkHandler<string>("PASSWORD NOT MATCH"));
+                    }
+
+                    Employees toCreateEmployee = registerAccoutDto;
+                    toCreateEmployee.Nik = GenerateHandler.GenerateNik(_employeeRepository.GetLastNik());
+                    var addEmployee = _employeeRepository.Create(toCreateEmployee);
+                    var checkUniversity = _universityRepository.GetUniversities(registerAccoutDto.UniversityCode, registerAccoutDto.UniversityName);
+                    if (checkUniversity is null)
+                    {
+                        checkUniversity = _universityRepository.Create(registerAccoutDto);
+
+                    }
+                    Education toCreateEducation = registerAccoutDto;
+                    toCreateEducation.UniversityGuid = checkUniversity.Guid;
+                    toCreateEducation.Guid = addEmployee.Guid;
+                    var eddEducation = _educationRepository.Create(toCreateEducation);
+
+                    Accounts toCreateAccount = registerAccoutDto;
+                    toCreateAccount.Guid = addEmployee.Guid;
+                    toCreateAccount.Password = HashHandler.HashPassword(registerAccoutDto.Password);
+
+
+                    var addAccount = _accountRepository.Create(toCreateAccount);
+                    transaction.Complete();
+                    return Ok(new ResponseOkHandler<string>("REGISTER SUCCESS"));
+
+                }
+                catch (Exception ex)
+                {
+
+                    return StatusCode(StatusCodes.Status500InternalServerError,
+                        new ResponseErrorHandler
+                        {
+                            Code = StatusCodes.Status500InternalServerError,
+                            Status = HttpStatusCode.InternalServerError.ToString(),
+                            Message = "FAILED TO REGISTER"
+                        });
+                }
+            }
+        }
+
+        [HttpGet("Login")]
+        public IActionResult Login(string email, string password)
+        {
+            try
+            {
+                var existingEmployee = _employeeRepository.GetEmail(email);
+                if (existingEmployee is null)
+                {
+                    return NotFound(new ResponseErrorHandler
+                    {
+                        Code = StatusCodes.Status404NotFound,
+                        Status = HttpStatusCode.NotFound.ToString(),
+                        Message = "EMAIL SALAH"
+                    });
+                }
+
+                var existingEmployeeAccount = _accountRepository.GetByGuid(existingEmployee.Guid);
+
+                if (!HashHandler.VerifyPassword(password, existingEmployeeAccount.Password))
+                {
+                    return Ok(new ResponseOkHandler<string>("PASSWORD SALAH"));
+                }
+
+
+                return Ok(new ResponseOkHandler<string>("LOGIN SUCCESS"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status500InternalServerError,
+                    Status = HttpStatusCode.InternalServerError.ToString(),
+                    Message = "FAIL TO UPDATE DATA",
+                    Error = ex.Message
+                });
+            }
+
+        }
+
+
+
+
 
         [HttpGet("{guid}")]
         /*

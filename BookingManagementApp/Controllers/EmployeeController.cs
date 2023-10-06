@@ -15,13 +15,59 @@ namespace API.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeRepository _employeeRepository;
-
+        private readonly IEducationyRepository _educationyRepository;
+        private readonly IUniversityRepository _universityRepository;
         //Constructor
-        public EmployeeController(IEmployeeRepository employeeRepository)
+        public EmployeeController(IEmployeeRepository employeeRepository, IEducationyRepository educationyRepository, IUniversityRepository universityRepository)
         {
             _employeeRepository = employeeRepository;
+            _educationyRepository = educationyRepository;
+            _universityRepository = universityRepository;
         }
 
+
+
+        [HttpGet("Details")]
+        public IActionResult GetDetails() 
+        {
+            var employee = _employeeRepository.GetAll();
+            var education = _educationyRepository.GetAll();
+            var university = _universityRepository.GetAll();
+
+            if (!(employee.Any() && education.Any() && university.Any()))
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
+            }
+
+            var employeeDetails = from emp in employee
+                                  join edu in education on emp.Guid equals edu.Guid
+                                  join uni in university on edu.UniversityGuid equals uni.Guid
+                                  select new EmployeeDetailDto
+                                  {
+                                      Guid = emp.Guid,
+                                      Nik = emp.Nik,
+                                      FullName = string.Concat(emp.FirstName, " ", emp.LastName),
+                                      BirthDate = emp.BirthDate,
+                                      Gender = emp.Gender.ToString(),
+                                      HiringDate = emp.HiringDate,
+                                      Email = emp.Email,
+                                      PhoneNumber = emp.PhoneNumber,
+                                      Major = edu.Major,
+                                      Degree = edu.Degree,
+                                      Gpa = edu.Gpa,
+                                      University = uni.Name
+                                  };
+
+            return Ok(new ResponseOkHandler<IEnumerable<EmployeeDetailDto>>(employeeDetails));
+
+        }
+
+        
         [HttpGet] //http request method
         //get All data
         public IActionResult GetAll()

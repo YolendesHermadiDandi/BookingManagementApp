@@ -16,5 +16,12 @@ namespace API.Repositories
             return _context.Set<Employees>().OrderBy(e => e.Nik).LastOrDefault()?.Nik;
 
         }
+
+        public Employees GetEmail(string email)
+        {
+            var entity = _context.Set<Employees>().FirstOrDefault(e => e.Email == email);
+            _context.ChangeTracker.Clear();
+            return entity;
+        }
     }
 }

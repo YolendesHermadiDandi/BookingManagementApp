@@ -23,5 +23,13 @@ namespace API.Utilities.Handler
             Status = HttpStatusCode.OK.ToString();
             Message = message;
         }
+
+        public ResponseOkHandler(TEntity? data, string message)
+        {
+            Code = StatusCodes.Status200OK;
+            Status = HttpStatusCode.OK.ToString();
+            Message = message;
+            Data = data;
+        }
     }
 }

@@ -9,9 +9,9 @@ namespace API.DTOs.Account
 
         public Guid Guid { get; set; }
         public string Password { get; set; }
-        public int Otp { get; set; }
-        public bool IsUsed { get; set; }
-        public DateTime ExpiredTime { get; set; }
+        //public int Otp { get; set; }
+        //public bool IsUsed { get; set; }
+        //public DateTime ExpiredTime { get; set; }
 
         /*
          * method implicit yang digunaakan untuk create Account Role
@@ -24,9 +24,9 @@ namespace API.DTOs.Account
             {
                 Guid = createAccountDto.Guid,
                 Password = createAccountDto.Password,
-                OTP = createAccountDto.Otp,
-                IsUsed = createAccountDto.IsUsed,
-                ExpiredTime = createAccountDto.ExpiredTime,
+                //OTP = createAccountDto.Otp,
+                //IsUsed = createAccountDto.IsUsed,
+                //ExpiredTime = createAccountDto.ExpiredTime,
                 CreateDate = DateTime.Now,
                 ModifiedeDate = DateTime.Now,
             };

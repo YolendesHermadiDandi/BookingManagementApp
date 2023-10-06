@@ -6,5 +6,6 @@ namespace API.Contracts
     public interface IEmployeeRepository : IGeneralRepository<Employees>
     {
         string? GetLastNik();
+        Employees GetEmail(string email);
     }
 }

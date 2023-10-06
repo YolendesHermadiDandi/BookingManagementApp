@@ -14,6 +14,15 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("defaultConnection");
 builder.Services.AddDbContext<BookingManagementDbContext>(option  => option.UseSqlServer(connectionString));
 
+//add email repository to the container
+builder.Services.AddTransient<IEmailHandlerRepository, EmailHandlerRepository>(_ =>
+            new EmailHandlerRepository
+            (
+                builder.Configuration["StmpServices:Server"],
+                int.Parse(builder.Configuration["StmpServices:Port"]),
+                builder.Configuration["StmpServices:FromEmailAddress"]
+                ));
+
 // Add repositories to the container.
 
 builder.Services.AddScoped<IUniversityRepository, UniversityRepository>();

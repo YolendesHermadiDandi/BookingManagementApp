@@ -7,7 +7,7 @@ namespace API.Utilities.Validations.Educations
     {
         public CreateEducationValidator()
         {
-     
+
             //validasi major tidak boleh kosong dan panjang maksimum 100
             RuleFor(e => e.Major)
                 .NotEmpty()
