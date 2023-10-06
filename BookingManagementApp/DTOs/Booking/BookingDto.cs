@@ -8,12 +8,15 @@ namespace API.DTOs.Booking
     {
         //setter getter
         public Guid Guid { get; set; }
+        //public string BookedNik {  get; set; }
+        //public string BookedBy {  get; set; }
+        //public string RoomName {  get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public StatusLevel Status { get; set; }
         public string Remarks { get; set; }
-        public Guid RoomGuid { get; set; }
-        public Guid EmployeeGuid { get; set; }
+        //public Guid RoomGuid { get; set; }
+        //public Guid EmployeeGuid { get; set; }
 
 
         /*
@@ -32,8 +35,8 @@ namespace API.DTOs.Booking
                 EndDate = bookings.EndDate,
                 Status = bookings.Status,
                 Remarks = bookings.Remarks,
-                RoomGuid = bookings.RoomGuid,
-                EmployeeGuid = bookings.EmployeeGuid,
+                //RoomGuid = bookings.RoomGuid,
+                //EmployeeGuid = bookings.EmployeeGuid,
 
             };
         }
@@ -52,8 +55,8 @@ namespace API.DTOs.Booking
                 EndDate = bookingDto.EndDate,
                 Status = bookingDto.Status,
                 Remarks = bookingDto.Remarks,
-                RoomGuid = bookingDto.RoomGuid,
-                EmployeeGuid = bookingDto.EmployeeGuid,
+                //RoomGuid = bookingDto.RoomGuid,
+                //EmployeeGuid = bookingDto.EmployeeGuid,
                 ModifiedeDate = DateTime.Now,
             };
         }

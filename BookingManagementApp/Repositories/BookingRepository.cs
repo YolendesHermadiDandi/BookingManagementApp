@@ -9,5 +9,10 @@ namespace API.Repositories
     {
         public BookingRepository(BookingManagementDbContext context) : base(context) { }
 
+        public IEnumerable<Bookings> GetBookingRoomsToday()
+        {
+            return _context.Set<Bookings>().Where(b => b.StartDate <= DateTime.Today && b.EndDate >= DateTime.Today);
+           
+        }
     }
 }

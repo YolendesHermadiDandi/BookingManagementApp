@@ -4,10 +4,12 @@ using API.DTOs.Employee;
 using API.Models;
 using API.Repositories;
 using API.Utilities.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Net;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Transactions;
 
@@ -16,26 +18,37 @@ namespace API.Controllers
     //API route
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AccountController : ControllerBase
     {
         private readonly IAccountsRepository _accountRepository;
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IEducationyRepository _educationRepository;
         private readonly IUniversityRepository _universityRepository;
+        private readonly IAccountRoleRepository _accountRoleRepository;
+        private readonly IRoleRepository _roleRepository;
         private readonly IEmailHandlerRepository _emailHandlerRepository;
+        private readonly ITokenHandler _tokenHandler;
+
 
         //Constructor
         public AccountController(IAccountsRepository accountRepository,
                                  IEmployeeRepository employeeRepository,
                                  IEducationyRepository educationyRepository,
                                  IUniversityRepository universityRepository,
-                                 IEmailHandlerRepository emailHandlerRepository)
+                                 IEmailHandlerRepository emailHandlerRepository,
+                                 ITokenHandler tokenHandler,
+                                 IAccountRoleRepository accountRoleRepository,
+                                 IRoleRepository roleRepository)
         {
             _accountRepository = accountRepository;
             _employeeRepository = employeeRepository;
             _educationRepository = educationyRepository;
             _universityRepository = universityRepository;
             _emailHandlerRepository = emailHandlerRepository;
+            _tokenHandler = tokenHandler;
+            _accountRoleRepository = accountRoleRepository;
+            _roleRepository = roleRepository;
         }
 
         [HttpGet] //http request method
@@ -60,6 +73,7 @@ namespace API.Controllers
 
 
         [HttpPut("ForgotPassword")]
+        [AllowAnonymous]
         public IActionResult ForgotPassword(string email)
         {
             try
@@ -84,7 +98,7 @@ namespace API.Controllers
                 toUpdate.ExpiredTime = DateTime.Now.AddMinutes(5);
 
                 var result = _accountRepository.Update(toUpdate);
-                
+
 
                 var employee = _employeeRepository.GetAll();
                 var account = _accountRepository.GetAll();
@@ -114,6 +128,7 @@ namespace API.Controllers
         }
 
         [HttpPut("ChangePassword")]
+        [AllowAnonymous]
         public IActionResult ChangePassword(ChangePasswordDto changePasswordDto)
         {
             try
@@ -173,6 +188,7 @@ namespace API.Controllers
         }
 
         [HttpPost("Register")]
+        [AllowAnonymous]
         public IActionResult Register(RegisterAccoutDto registerAccoutDto)
         {
             using (TransactionScope transaction = new TransactionScope())
@@ -203,8 +219,16 @@ namespace API.Controllers
                     toCreateAccount.Guid = addEmployee.Guid;
                     toCreateAccount.Password = HashHandler.HashPassword(registerAccoutDto.Password);
 
-
                     var addAccount = _accountRepository.Create(toCreateAccount);
+
+                    //assign role
+                    var accountRole = _accountRoleRepository.Create(new AccountRoles 
+                    {
+                        AccountGuid = toCreateAccount.Guid,
+                        RoleGuid = _roleRepository.GetDefaultRoleGuid() ?? throw new Exception("Default Role Not Found")
+                    });
+
+                   
                     transaction.Complete();
                     return Ok(new ResponseOkHandler<string>("REGISTER SUCCESS"));
 
@@ -217,13 +241,15 @@ namespace API.Controllers
                         {
                             Code = StatusCodes.Status500InternalServerError,
                             Status = HttpStatusCode.InternalServerError.ToString(),
-                            Message = "FAILED TO REGISTER"
+                            Message = "FAILED TO REGISTER",
+                            Error = ex.InnerException?.Message ?? ex.Message
                         });
                 }
             }
         }
 
         [HttpGet("Login")]
+        [AllowAnonymous]
         public IActionResult Login(string email, string password)
         {
             try
@@ -246,8 +272,26 @@ namespace API.Controllers
                     return Ok(new ResponseOkHandler<string>("PASSWORD SALAH"));
                 }
 
+                var claims = new List<Claim>();
+                claims.Add(new Claim("Email", existingEmployee.Email));
+                claims.Add(new Claim("FullName", string.Concat(existingEmployee.FirstName, " ", existingEmployee.LastName)));
 
-                return Ok(new ResponseOkHandler<string>("LOGIN SUCCESS"));
+                var getRolesName = from ar in _accountRoleRepository.GetAll()
+                                   join r in _roleRepository.GetAll() on ar.RoleGuid equals r.Guid
+                                   where ar.AccountGuid == existingEmployee.Guid
+                                   select r.Name;
+
+                foreach (var role in getRolesName) 
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
+                var generateToken = _tokenHandler.Generate(claims);
+
+
+
+
+                return Ok(new ResponseOkHandler<object>(new { Token = generateToken }, "login success"));
             }
             catch (Exception ex)
             {

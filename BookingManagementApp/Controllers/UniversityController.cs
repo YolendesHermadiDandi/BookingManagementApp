@@ -4,6 +4,7 @@ using API.DTOs.University;
 using API.Models;
 using API.Repositories;
 using API.Utilities.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -14,6 +15,7 @@ namespace API.Controllers;
 [ApiController]
 //API route
 [Route("api/[controller]")]
+[Authorize]
 public class UniversityController : ControllerBase
 {
     private readonly IUniversityRepository _universityRepository;

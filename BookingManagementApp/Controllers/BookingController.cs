@@ -1,9 +1,11 @@
 ﻿using API.Contracts;
 using API.DTOs.Account;
 using API.DTOs.Booking;
+using API.DTOs.Employee;
 using API.Models;
 using API.Repositories;
 using API.Utilities.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -13,16 +15,21 @@ namespace API.Controllers
     //API route
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BookingController : ControllerBase
     {
         private readonly IBookingRepository _bookingRepository;
+        private readonly IEmployeeRepository _emloyeeRepository;
+        private readonly IRoomRepository _roomRepository;
         //Constructor
-        public BookingController(IBookingRepository bookingRepository)
+        public BookingController(IBookingRepository bookingRepository, IEmployeeRepository emloyeeRepository, IRoomRepository roomRepository)
         {
             _bookingRepository = bookingRepository;
+            _emloyeeRepository = emloyeeRepository;
+            _roomRepository = roomRepository;
         }
 
-        [HttpGet] //http request method
+        [HttpGet("get-all")] //http request method
         //get All data
         public IActionResult GetAll()
         {
@@ -42,6 +49,76 @@ namespace API.Controllers
             return Ok(new ResponseOkHandler<IEnumerable<BookingDto>>(data));
         }
 
+
+
+        [HttpGet("get-booking-today")]
+        [AllowAnonymous]
+        public IActionResult GetRoomBookingsToday()
+        {
+            var bookingsToday = _bookingRepository.GetBookingRoomsToday();
+            var employee = _emloyeeRepository.GetAll();
+            var rooms = _roomRepository.GetAll();
+
+            if (!(employee.Any() && rooms.Any() && bookingsToday.Any()))
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
+            }
+
+            var bookingDetail = from bt in bookingsToday
+                                join emp in employee on bt.EmployeeGuid equals emp.Guid
+                                join r in rooms on bt.RoomGuid equals r.Guid
+                                select new GetBookingTodayDto
+                                {
+                                    Guid = bt.Guid,
+                                    RoomName = r.Name,
+                                    Status = bt.Status.ToString(),
+                                    Floor = r.Floor,
+                                    BookedBy = string.Concat(emp.FirstName, " ", emp.LastName),
+
+                                };
+            return Ok(new ResponseOkHandler<IEnumerable<GetBookingTodayDto>>(bookingDetail));
+        }
+
+        [HttpGet("get-booking-detail")]
+        public IActionResult getBookingDetail()
+        {
+            var employee = _emloyeeRepository.GetAll();
+            var booking = _bookingRepository.GetAll();
+            var room = _roomRepository.GetAll();
+
+            if (!(employee.Any() && booking.Any() && room.Any()))
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND"
+                });
+            }
+
+            var bookingDetail = from b in booking
+                                join emp in employee on b.EmployeeGuid equals emp.Guid
+                                join r in room on b.RoomGuid equals r.Guid
+                                select new DetailBookingDto
+                                {
+                                    Guid = b.Guid,
+                                    BookedNik = emp.Nik,
+                                    BookedBy = string.Concat(emp.FirstName, " ", emp.LastName),
+                                    RoomName = r.Name,
+                                    StartDate = b.StartDate,
+                                    EndDate = b.EndDate,
+                                    Status = b.Status.ToString(),
+                                    Remarks = b.Remarks
+
+                                };
+            return Ok(new ResponseOkHandler<IEnumerable<DetailBookingDto>>(bookingDetail));
+        }
+
         [HttpGet("{guid}")]
         /*
         * method dibawah digunakan untuk mendapatkan data berdasarkan guid
@@ -52,7 +129,9 @@ namespace API.Controllers
         public IActionResult GetByGuid(Guid guid)
         {
             var result = _bookingRepository.GetByGuid(guid);
-            if (result is null)
+            var employee = _emloyeeRepository.GetByGuid(result.EmployeeGuid);
+            var room = _roomRepository.GetByGuid(result.RoomGuid);
+            if (result is null && employee is null && room is null)
             {
                 return NotFound(new ResponseErrorHandler
                 {
@@ -61,7 +140,22 @@ namespace API.Controllers
                     Message = "Data NOT FOUND"
                 });
             }
-            return Ok(new ResponseOkHandler<BookingDto>((BookingDto)result)); //konversi explisit
+
+            var getDetailById = new DetailBookingDto
+            {
+                Guid = result.Guid,
+                BookedNik = employee.Nik,
+                BookedBy = string.Concat(employee.FirstName, " ", employee.LastName),
+                RoomName = room.Name,
+                StartDate = result.StartDate,
+                EndDate = result.EndDate,
+                Status = result.Status.ToString(),
+                Remarks = result.Remarks
+            };
+
+            
+
+            return Ok(new ResponseOkHandler<DetailBookingDto>(getDetailById)); //konversi explisit
         }
 
         [HttpPost]

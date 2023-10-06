@@ -4,6 +4,7 @@ using API.DTOs.AccountRole;
 using API.Models;
 using API.Repositories;
 using API.Utilities.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -13,6 +14,7 @@ namespace API.Controllers
     //API route
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AccountRoleController : ControllerBase
     {
         private readonly IAccountRoleRepository _accountRoleRepository;

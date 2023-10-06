@@ -16,14 +16,14 @@ namespace API.Utilities.Validations.Rooms
                 .NotEmpty()
                 .MaximumLength(100)
                 .Matches(@"^[A-Za-z\s]*$").WithMessage("'{PropertyName}' should only contain letters.");
-            
+
             /*validator untuk floor dengan ketentuan sbb:
               * 1. tidak boleh kosong
               * 2. angka yang dimasukan tidak boleh kurang dari 1
               */
             RuleFor(r => r.Floor)
                 .NotEmpty()
-                .LessThan(1);
+                .GreaterThan(0);
 
             /*validator untuk capacity name dengan ketentuan sbb:
              * 1. tidak boleh kosong
@@ -31,7 +31,7 @@ namespace API.Utilities.Validations.Rooms
              */
             RuleFor(r => r.Capacity)
                 .NotEmpty()
-                .LessThan(1);
+                 .GreaterThan(0);
 
         }
 

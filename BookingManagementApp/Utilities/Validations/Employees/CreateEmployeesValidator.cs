@@ -17,7 +17,7 @@ namespace API.Utilities.Validations.Employees
             RuleFor(e => e.FirstName)
                 .NotEmpty()
                 .MaximumLength(100)
-                .Matches(@"^[A-Za-z\s]*$").WithMessage("'{PropertyName}' should only contain letters.");
+                .Matches(@"^[A-Za-z\s]+").WithMessage("'{PropertyName}' should only contain letters.");
 
             /*validator untuk last name dengan ketentuan sbb:
             * 1. tidak boleh kosong
@@ -26,7 +26,7 @@ namespace API.Utilities.Validations.Employees
             */
             RuleFor(e => e.LastName)
                 .MaximumLength(100)
-                .Matches(@"^[A-Za-z\s]*$").WithMessage("'{PropertyName}' should only contain letters.");
+                .Matches(@"^[A-Za-z\s]+").WithMessage("'{PropertyName}' should only contain letters.");
 
             /*validator untuk birth date dengan ketentuan sbb:
             * 1. tidak boleh kosong
@@ -34,7 +34,7 @@ namespace API.Utilities.Validations.Employees
             */
             RuleFor(e => e.BirthDate)
                 .NotEmpty()
-                .GreaterThanOrEqualTo(DateTime.Now.AddYears(-18));
+                .LessThanOrEqualTo(DateTime.Now.AddYears(-18));
 
             /*validator untuk gender dengan ketentuan sbb:
             * 1. tidak boleh kosong

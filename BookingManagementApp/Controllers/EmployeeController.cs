@@ -3,6 +3,7 @@ using API.DTOs.Account;
 using API.DTOs.Employee;
 using API.Models;
 using API.Utilities.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -12,6 +13,7 @@ namespace API.Controllers
     //API route
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -28,6 +30,7 @@ namespace API.Controllers
 
 
         [HttpGet("Details")]
+        [Authorize(Roles = "manager, admin")]
         public IActionResult GetDetails() 
         {
             var employee = _employeeRepository.GetAll();
