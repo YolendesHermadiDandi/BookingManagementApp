@@ -123,13 +123,13 @@ namespace API.Controllers
         }
 
         [HttpGet("get-room-avilable-today")]
-        public IActionResult GetRoomAvilableToday()
+        public IActionResult GetRoomAvailableToday()
         {
             var bookingToday = _bookingRepository.GetBookingRoomsToday(); //get rooms booking today
             var booking = _bookingRepository.GetAll(); //get all booking
             var rooms = _roomRepository.GetAll(); //get all rooms
 
-            if (!(rooms.Any() && booking.Any()))
+            if (!(rooms.Any() && booking.Any() && bookingToday.Any()))
             {
                 return NotFound(new ResponseErrorHandler
                 {
@@ -164,6 +164,15 @@ namespace API.Controllers
             List<BookingLengthDto> ListbookingLengthDtos = new List<BookingLengthDto>();
 
             var bookings = _bookingRepository.GetBookingRoomsToday(); //get booking room today
+            if (!bookings.Any())
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND",
+                });
+            }
 
             //looping untuk mengecekan tiap booking
             foreach (var booking in bookings)

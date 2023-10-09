@@ -204,7 +204,8 @@ namespace API.Controllers
                     Employees toCreateEmployee = registerAccoutDto;
                     toCreateEmployee.Nik = GenerateHandler.GenerateNik(_employeeRepository.GetLastNik());
                     var addEmployee = _employeeRepository.Create(toCreateEmployee);
-                    var checkUniversity = _universityRepository.GetUniversities(registerAccoutDto.UniversityCode, registerAccoutDto.UniversityName);
+                    var checkUniversity = _universityRepository.GetUniversities(
+                                        registerAccoutDto.UniversityCode, registerAccoutDto.UniversityName);
                     if (checkUniversity is null)
                     {
                         checkUniversity = _universityRepository.Create(registerAccoutDto);
@@ -225,7 +226,8 @@ namespace API.Controllers
                     var accountRole = _accountRoleRepository.Create(new AccountRoles 
                     {
                         AccountGuid = toCreateAccount.Guid,
-                        RoleGuid = _roleRepository.GetDefaultRoleGuid() ?? throw new Exception("Default Role Not Found")
+                        RoleGuid = _roleRepository.GetDefaultRoleGuid() ?? 
+                        throw new Exception("Default Role Not Found")
                     });
 
                    
@@ -274,7 +276,8 @@ namespace API.Controllers
 
                 var claims = new List<Claim>();
                 claims.Add(new Claim("Email", existingEmployee.Email));
-                claims.Add(new Claim("FullName", string.Concat(existingEmployee.FirstName, " ", existingEmployee.LastName)));
+                claims.Add(new Claim("FullName", string.Concat(
+                    existingEmployee.FirstName, " ", existingEmployee.LastName)));
 
                 var getRolesName = from ar in _accountRoleRepository.GetAll()
                                    join r in _roleRepository.GetAll() on ar.RoleGuid equals r.Guid

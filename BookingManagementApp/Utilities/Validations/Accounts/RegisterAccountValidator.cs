@@ -95,7 +95,7 @@ namespace API.Utilities.Validations.Accounts
             RuleFor(r => r.UniversityName)
                .NotEmpty()
                .MaximumLength(100)
-               .Matches(@"^[A-Za-z\s]*$").WithMessage("'{PropertyName}' should only contain letters.");
+               .Matches(@"^[A-Za-z\s]+").WithMessage("'{PropertyName}' should only contain letters.");
 
             RuleFor(a => a.Password)
                    .NotEmpty()
