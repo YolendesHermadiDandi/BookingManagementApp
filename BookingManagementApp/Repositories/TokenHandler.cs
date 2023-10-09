@@ -14,6 +14,7 @@ namespace API.Repositories
             _configuration = configuration;
         }
 
+        //pembuatan generate encode Token dengan menggunakan variabel secret key, siging credentials dan token option
         public string Generate(IEnumerable<Claim> claims)
         {
             var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTServices:Secretkey"]));

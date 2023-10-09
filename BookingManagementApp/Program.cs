@@ -41,7 +41,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                ValidIssuer = builder.Configuration["JWTServices:Issuer"],
                ValidateAudience = true,
                ValidAudience = builder.Configuration["JWTServices:Audience"],
-               IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWTServices:SecretKey"])),
+               IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                                        builder.Configuration["JWTServices:SecretKey"])),
                ValidateLifetime = true,
                ClockSkew = TimeSpan.Zero
            };
@@ -90,6 +91,7 @@ builder.Services.AddControllers()
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(x => {
     x.SwaggerDoc("v1", new OpenApiInfo
     {

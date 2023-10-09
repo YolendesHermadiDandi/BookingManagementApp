@@ -2,12 +2,15 @@
 using API.DTOs.Account;
 using API.DTOs.Booking;
 using API.DTOs.Employee;
+using API.DTOs.Room;
 using API.Models;
 using API.Repositories;
+using API.Utilities.Enums;
 using API.Utilities.Handler;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace API.Controllers
@@ -50,14 +53,12 @@ namespace API.Controllers
         }
 
 
-
         [HttpGet("get-booking-today")]
-        [AllowAnonymous]
         public IActionResult GetRoomBookingsToday()
         {
-            var bookingsToday = _bookingRepository.GetBookingRoomsToday();
-            var employee = _emloyeeRepository.GetAll();
-            var rooms = _roomRepository.GetAll();
+            var bookingsToday = _bookingRepository.GetBookingRoomsToday(); //getbooking today
+            var employee = _emloyeeRepository.GetAll(); //get all employee
+            var rooms = _roomRepository.GetAll(); // get all room
 
             if (!(employee.Any() && rooms.Any() && bookingsToday.Any()))
             {
@@ -68,7 +69,7 @@ namespace API.Controllers
                     Message = "Data NOT FOUND"
                 });
             }
-
+            //linq join
             var bookingDetail = from bt in bookingsToday
                                 join emp in employee on bt.EmployeeGuid equals emp.Guid
                                 join r in rooms on bt.RoomGuid equals r.Guid
@@ -85,11 +86,12 @@ namespace API.Controllers
         }
 
         [HttpGet("get-booking-detail")]
+       
         public IActionResult getBookingDetail()
         {
-            var employee = _emloyeeRepository.GetAll();
-            var booking = _bookingRepository.GetAll();
-            var room = _roomRepository.GetAll();
+            var employee = _emloyeeRepository.GetAll(); //get all employee
+            var booking = _bookingRepository.GetAll(); //get all booking
+            var room = _roomRepository.GetAll(); //get all room
 
             if (!(employee.Any() && booking.Any() && room.Any()))
             {
@@ -101,6 +103,7 @@ namespace API.Controllers
                 });
             }
 
+            //linq join
             var bookingDetail = from b in booking
                                 join emp in employee on b.EmployeeGuid equals emp.Guid
                                 join r in room on b.RoomGuid equals r.Guid
@@ -118,6 +121,88 @@ namespace API.Controllers
                                 };
             return Ok(new ResponseOkHandler<IEnumerable<DetailBookingDto>>(bookingDetail));
         }
+
+        [HttpGet("get-room-avilable-today")]
+        public IActionResult GetRoomAvilableToday()
+        {
+            var bookingToday = _bookingRepository.GetBookingRoomsToday(); //get rooms booking today
+            var booking = _bookingRepository.GetAll(); //get all booking
+            var rooms = _roomRepository.GetAll(); //get all rooms
+
+            if (!(rooms.Any() && booking.Any()))
+            {
+                return NotFound(new ResponseErrorHandler
+                {
+                    Code = StatusCodes.Status404NotFound,
+                    Status = HttpStatusCode.NotFound.ToString(),
+                    Message = "Data NOT FOUND",
+                });
+            }
+
+            //linq left join => untuk mendapatkan room yang tidak digunakan hari ini
+            var bookingDetail = (from r in rooms
+                                 join b in booking on r.Guid equals b.RoomGuid into joined
+                                 from b in joined.DefaultIfEmpty()
+                                 where r.Guid != b?.RoomGuid || b.Status == StatusLevel.Completed
+                                 select new RoomDto
+                                 {
+                                     Guid = r?.Guid ?? Guid.Empty,
+                                     Name = r?.Name,
+                                     Floor = r?.Floor ?? 0,
+                                     Capacity = r?.Capacity ?? 0
+                                 }).ToList();
+
+
+            return Ok(new ResponseOkHandler<IEnumerable<RoomDto>>(bookingDetail));
+
+        }
+
+        [HttpGet("get-booking-length")]
+        public IActionResult GetBookingLength()
+        {
+            // list buat tamping data room
+            List<BookingLengthDto> ListbookingLengthDtos = new List<BookingLengthDto>();
+
+            var bookings = _bookingRepository.GetBookingRoomsToday(); //get booking room today
+
+            //looping untuk mengecekan tiap booking
+            foreach (var booking in bookings)
+            {
+                var startDate = booking.StartDate; //tanggal mulai booking
+                var endDate = booking.EndDate; //tanggal selesai booking
+                var totalDayBooking = 0; //total hari selama booking
+
+                //looping selama start date <= end date
+                while (startDate <= endDate)
+                {
+                    //cek apakah hari sekarang merupakan hari sabtu/minggu
+                    if (startDate.DayOfWeek != DayOfWeek.Saturday &&
+                        startDate.DayOfWeek != DayOfWeek.Sunday)
+                    {
+                        //jika iya total booking +1
+                        totalDayBooking++;
+
+                    }
+                    // tambahkan 1 hari pada start date
+                    startDate = startDate.AddDays(1);
+                }
+                //ambil room berdasarkan guid
+                var room = _roomRepository.GetByGuid(booking.RoomGuid);
+                //masukan panjang bookingnya
+                var bookingLengthDto = new BookingLengthDto
+                {
+                    RoomGuid = room.Guid,
+                    RoomName = room.Name,
+                    BookingLength = string.Concat(totalDayBooking.ToString(), " Hari"),
+
+                };
+                //masukan booking length dto ke dalam list
+                ListbookingLengthDtos.Add(bookingLengthDto);
+            }
+            return Ok(new ResponseOkHandler<IEnumerable<BookingLengthDto>>(ListbookingLengthDtos));
+
+        }
+
 
         [HttpGet("{guid}")]
         /*
@@ -153,7 +238,7 @@ namespace API.Controllers
                 Remarks = result.Remarks
             };
 
-            
+
 
             return Ok(new ResponseOkHandler<DetailBookingDto>(getDetailById)); //konversi explisit
         }

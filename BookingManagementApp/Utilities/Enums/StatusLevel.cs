@@ -13,6 +13,6 @@ namespace API.Utilities.Enums
         Rejected,
         Canceled,
         Completed,
-        [Display(Name = "On Going")] Ongoing
+        Ongoing
     }
 }

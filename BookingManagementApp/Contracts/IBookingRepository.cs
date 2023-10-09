@@ -6,4 +6,5 @@ namespace API.Contracts;
 public interface IBookingRepository : IGeneralRepository<Bookings>
 {
     IEnumerable<Bookings> GetBookingRoomsToday();
+
 }

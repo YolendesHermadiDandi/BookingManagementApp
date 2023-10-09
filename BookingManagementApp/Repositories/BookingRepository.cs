@@ -1,5 +1,6 @@
 ﻿using API.Contracts;
 using API.Data;
+using API.DTOs.Room;
 using API.Models;
 
 namespace API.Repositories
@@ -11,8 +12,12 @@ namespace API.Repositories
 
         public IEnumerable<Bookings> GetBookingRoomsToday()
         {
-            return _context.Set<Bookings>().Where(b => b.StartDate <= DateTime.Today && b.EndDate >= DateTime.Today);
-           
+            //mengecek room yang di booking hari ini
+            return _context.Set<Bookings>().Where(b => b.StartDate <= DateTime.Now && b.EndDate >= DateTime.Now);
+
         }
+
+     
+        
     }
 }
