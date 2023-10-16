@@ -119,5 +119,9 @@ body {
     background-color: #F06ACE;
 }
 
+div.card-poke-moves{
+    height:256px;
+}
+
 
 

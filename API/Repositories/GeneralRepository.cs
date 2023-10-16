@@ -2,6 +2,7 @@
 using API.Data;
 using API.Models;
 using API.Utilities.Handler;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories
 {
@@ -77,13 +78,14 @@ namespace API.Repositories
         * Mengedit/mengubah(update) 1 data yang sudah ada dan memasukan perubahan kedalam databse
         * 
         * PHARAM:
-        * - entity :   merupakan kumpulan data (object/class/model) dari suatu data
+        * - entity :   merupakan kumpulan data (object/class/model) dari suatu dataS
         *              yang nantinya akan diinput oleh user
         */
         public bool Update(TEntity entity)
         {
             try
             {
+                //_context.Entry(entity).State = EntityState.Modified;
                 _context.Set<TEntity>().Update(entity);
                 _context.SaveChanges();
                 return true;

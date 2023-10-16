@@ -24,16 +24,16 @@ namespace API.Data
             {
                 e.Nik
             }).IsUnique();
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Employees>().HasIndex(e => new
-            {
-                e.Email
-            }).IsUnique();
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Employees>().HasIndex(e => new
-            {
-                e.PhoneNumber
-            }).IsUnique();
+            //base.OnModelCreating(modelBuilder);
+            //modelBuilder.Entity<Employees>().HasIndex(e => new
+            //{
+            //    e.Email
+            //}).IsUnique();
+            //base.OnModelCreating(modelBuilder);
+            //modelBuilder.Entity<Employees>().HasIndex(e => new
+            //{
+            //    e.PhoneNumber
+            //}).IsUnique();
 
             // One University has many Educations
             modelBuilder.Entity<Universities>()

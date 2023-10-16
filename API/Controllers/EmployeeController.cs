@@ -6,6 +6,7 @@ using API.Utilities.Handler;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Net;
 
 namespace API.Controllers
@@ -13,7 +14,7 @@ namespace API.Controllers
     //API route
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [AllowAnonymous]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -31,7 +32,7 @@ namespace API.Controllers
 
         [HttpGet("Details")]
         [Authorize(Roles = "manager, admin")]
-        public IActionResult GetDetails() 
+        public IActionResult GetDetails()
         {
             var employee = _employeeRepository.GetAll();
             var education = _educationyRepository.GetAll();
@@ -70,7 +71,7 @@ namespace API.Controllers
 
         }
 
-        
+
         [HttpGet] //http request method
         //get All data
         public IActionResult GetAll()
@@ -113,7 +114,7 @@ namespace API.Controllers
             return Ok(new ResponseOkHandler<EmployeeDto>((EmployeeDto)result)); //konversi explisit
         }
 
-        [HttpPost]
+        [HttpPost("insert")]
         /*
         * Method dibawah digunakan untuk memasukan data dengan menggunakan parameter dari method DTO
         * 
@@ -130,6 +131,17 @@ namespace API.Controllers
                 toCreate.Nik = GenerateHandler.GenerateNik(_employeeRepository.GetLastNik());
                 var result = _employeeRepository.Create(toCreate);
 
+                if (result is null)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO INSERT DATA"
+                 });
+                }
+
                 return Ok(new ResponseOkHandler<EmployeeDto>((EmployeeDto)result));
             }
             catch (Exception ex)
@@ -139,13 +151,14 @@ namespace API.Controllers
                  {
                      Code = StatusCodes.Status500InternalServerError,
                      Status = HttpStatusCode.NotFound.ToString(),
-                     Message = "FAILED TO CREATE DATA"
+                     Message = "FAILED TO CREATE DATA",
+                     Error = ex.Message
                  });
             }
 
         }
 
-        [HttpPut]
+        [HttpPut("update")]
         /*
         * Method dibawah digunakan untuk mengupdate data dengan menggunakan parameter dari method DTO
         * 
@@ -166,11 +179,32 @@ namespace API.Controllers
                         Message = "ID NOT FOUND"
                     });
                 }
+                Employees toUpdate = new Employees(); ;
 
-                Employees toUpdate = employeeDto;
-                toUpdate.CreateDate = existingEmployee.CreateDate;
+                //toUpdate.Guid = existingEmployee.Guid;
+                existingEmployee.FirstName = employeeDto.FirstName;
+                existingEmployee.LastName = employeeDto.LastName;
+                existingEmployee.BirthDate = employeeDto.BirthDate;
+                existingEmployee.HiringDate = employeeDto.HiringDate;
+                existingEmployee.Gender = employeeDto.Gender;
+                existingEmployee.Email = employeeDto.Email;
+                existingEmployee.PhoneNumber = employeeDto.PhoneNumber;
+                //existingEmployee.Nik = existingEmployee.Nik;
+                //existingEmployee.CreateDate = existingEmployee.CreateDate;
 
-                var result = _employeeRepository.Update(toUpdate);
+                var result = _employeeRepository.Update(existingEmployee);
+
+                if (result is false)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO UPDATE DATA"
+                 });
+                }
+
                 return Ok(new ResponseOkHandler<string>("DATA UPDATED"));
             }
             catch (Exception ex)
@@ -208,6 +242,18 @@ namespace API.Controllers
                 }
 
                 var result = _employeeRepository.Delete(existingEmployee);
+                if (result is false)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError,
+                 new ResponseErrorHandler
+                 {
+                     Code = StatusCodes.Status500InternalServerError,
+                     Status = HttpStatusCode.NotFound.ToString(),
+                     Message = "FAILED TO DELETE DATA"
+                 });
+
+                }
+
                 return Ok(new ResponseOkHandler<string>("DATA DELETED"));
             }
             catch (Exception ex)

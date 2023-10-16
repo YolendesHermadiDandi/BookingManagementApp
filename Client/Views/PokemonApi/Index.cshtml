@@ -7,7 +7,7 @@
     <h1 class="text-white mt-5">POKEMON API</h1>
     <div class="table-wrapper">
         <table class="table table-striped table-secondary table-hover">
-            <thead>
+            <thead class="sticky-top">
                 <tr>
                     <th>No</th>
                     <th>Nama</th>
@@ -29,7 +29,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modalPoke" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg modal-poke">
         <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title mx-auto" id="exampleModalLabel">Modal title</h1>
@@ -61,7 +61,7 @@
                                 <div class="card-body">
                                     <div class="text-center">
                                         <h3>Ability</h3>
-                                        <ul class="list-group list-group-numbered overflow-auto">
+                                        <ul class="list-group list-group-numbered overflow-auto poke-abilities">
                                             @* //Pokemon abilities *@
                                         </ul>
                                     </div>
@@ -91,10 +91,18 @@
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
-                            <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">...</div>
-                            <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">...</div>
+
+                            <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+                                <div class="card card-poke-moves overflow-auto">
+                                    <div class="card-body">
+                                        <ul class="list-group list-group-horizontal d-flex flex-wrap poke-moves overflow-auto">
+                                           @* Poke moves *@
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -105,9 +113,8 @@
             </div>
         </div>
     </div>
+</div>
 
-
-    @section Scripts{
-        <script src="~/js/pokeApi.js"></script>
-
-    }
+@section Scripts{
+    <script src="~/js/pokeApi.js" asp-append-version="true"></script>
+}

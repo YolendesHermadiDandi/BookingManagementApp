@@ -235,13 +235,7 @@ namespace API.Migrations
 
                     b.HasKey("Guid");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
                     b.HasIndex("Nik")
-                        .IsUnique();
-
-                    b.HasIndex("PhoneNumber")
                         .IsUnique();
 
                     b.ToTable("tb_m_employees");

@@ -32,7 +32,7 @@ namespace API.Utilities.Validations.Employees
             */
             RuleFor(e => e.BirthDate)
                 .NotEmpty()
-                .GreaterThanOrEqualTo(DateTime.Now.AddYears(-18));
+                .LessThanOrEqualTo(DateTime.Now.AddYears(-18));
 
             /*validator untuk gender dengan ketentuan sbb:
             * 1. tidak boleh kosong

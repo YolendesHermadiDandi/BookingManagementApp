@@ -8,6 +8,6 @@
     public enum GenderLevel
     {
         Female,
-        mele
+        male
     }
 }

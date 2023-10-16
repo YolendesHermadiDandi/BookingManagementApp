@@ -37,16 +37,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
            options.SaveToken = true;
            options.TokenValidationParameters = new TokenValidationParameters
            {
-               ValidateIssuer = true,
+               ValidateIssuer = false,
                ValidIssuer = builder.Configuration["JWTServices:Issuer"],
-               ValidateAudience = true,
+               ValidateAudience = false,
                ValidAudience = builder.Configuration["JWTServices:Audience"],
+               ValidateIssuerSigningKey = false,
                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                                         builder.Configuration["JWTServices:SecretKey"])),
                ValidateLifetime = true,
                ClockSkew = TimeSpan.Zero
            };
        });
+// Add repositories to the container.
+
+builder.Services.AddScoped<IUniversityRepository, UniversityRepository>();
+builder.Services.AddScoped<IAccountsRepository, AccountRepository>();
+builder.Services.AddScoped<IAccountRoleRepository, AccountRoleRepository>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IEducationyRepository, EducationRepository>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 // add CORS
 builder.Services.AddCors(options =>
 {
@@ -58,16 +69,6 @@ builder.Services.AddCors(options =>
         policy.AllowAnyMethod(); //method acess http GET POST PUT DELETE
     });
 });
-// Add repositories to the container.
-
-builder.Services.AddScoped<IUniversityRepository, UniversityRepository>();
-builder.Services.AddScoped<IAccountsRepository, AccountRepository>();
-builder.Services.AddScoped<IAccountRoleRepository, AccountRoleRepository>();
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-builder.Services.AddScoped<IEducationyRepository, EducationRepository>();
-builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IRoomRepository, RoomRepository>();
 
 //Add fluent services
 builder.Services.AddFluentValidationAutoValidation()

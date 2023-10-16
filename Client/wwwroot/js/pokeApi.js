@@ -52,7 +52,7 @@ function detail(stringUrl) {
         $.each(res.abilities, (key, val) => {
             abilities += `<li class="list-group-item">${val.ability.name}</li>`;
         });
-        $(".list-group").html(abilities);
+        $(".poke-abilities").html(abilities);
 
 
         //stats & stats name
@@ -72,7 +72,7 @@ function detail(stringUrl) {
                     emot = "🛡";
                     break;
                 case "speed":
-                    emot = "💨 wahss";
+                    emot = "💨";
                 //    break;
                 //case "special-defense":
                 //    emot = "🛡";
@@ -89,7 +89,15 @@ function detail(stringUrl) {
                                 </div>
                               </div>`;
         });
-        //total = `<h6 class="card-title">Total : ${total}</h6>`;
+        total = `<h6 class="card-title">Total : ${total}</h6>`;
         $(".stats-detail").html(statsDetail + "" + total);
+
+
+        //poke moves
+        let moves = "";
+        $.each(res.moves, (key, val) => {
+            moves += `<li class="list-group-item list-group-item-info">${val.move.name}</li>`
+        });
+        $(".poke-moves").html(moves);
     });
 }
