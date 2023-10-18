@@ -9,6 +9,10 @@ namespace API.Utilities.Handler
         public string Message { get; set; }
         public TEntity? Data { get; set; }
 
+        public ResponseOkHandler()
+        {
+        }
+
         public ResponseOkHandler(TEntity? data)
         {
             Code = StatusCodes.Status200OK;

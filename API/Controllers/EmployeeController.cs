@@ -179,7 +179,7 @@ namespace API.Controllers
                         Message = "ID NOT FOUND"
                     });
                 }
-                Employees toUpdate = new Employees(); ;
+                //Employees toUpdate = new Employees();
 
                 //toUpdate.Guid = existingEmployee.Guid;
                 existingEmployee.FirstName = employeeDto.FirstName;

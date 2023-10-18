@@ -15,27 +15,30 @@ $('#addEmployee').on('click', () => {
     $('div.action-button').html('<button type="submit" id="submitButton" onclick="Insert()" class="btn btn-primary" data-bs-dismiss="modal">Submit</button>')
     document.getElementById("emploteeForm").reset();
 })
-function getUpdateEmployee(data) {
+function getUpdateEmployee(guid) {
     $('div.action-button').html('<button type="submit" id="updateButton" onclick="Update()" class="btn btn-primary" data-bs-dismiss="modal">Update</button>');
+    /*   let guid = */
     $.ajax({
-        url: `https://localhost:7100/api/employee/${data}`,
+        //url: `https://localhost:7100/api/employee/${data}`,
+        url: "employee/edit/" + guid,
         dataSrc: "data",
         dataType: "JSON"
     }).done((result) => {
-        $('#uEmpId').val(`${data}`);
-        $("#firstName").val(`${result.data.firstName}`);
-        $("#lastName").val(`${result.data.lastName}`);
-        $("#birthDate").val(`${DateFormat(result.data.birthDate)}`);
-        $("#genderSelect").val(`${result.data.gender}`);
-        $("#hiringDate").val(`${DateFormat(result.data.hiringDate)}`);
-        $("#email").val(`${result.data.email}`);
-        $("#phoneNumber").val(`${result.data.phoneNumber}`);
+
+        $('#uEmpId').val(`${result.guid}`);
+        $("#firstName").val(`${result.firstName}`);
+        $("#lastName").val(`${result.lastName}`);
+        $("#birthDate").val(`${DateFormat(result.birthDate)}`);
+        $("#genderSelect").val(`${result.gender}`);
+        $("#hiringDate").val(`${DateFormat(result.hiringDate)}`);
+        $("#email").val(`${result.email}`);
+        $("#phoneNumber").val(`${result.phoneNumber}`);
     }).fail((error) => {
     });
 }
 
 function Insert() {
-  /*  console.log('Oke');*/
+    /*  console.log('Oke');*/
     let employee = new Object();
     employee.firstName = $("#firstName").val();
     employee.lastName = $("#lastName").val();
@@ -54,15 +57,16 @@ function Insert() {
     console.log(employee);
     $.ajax({
         type: "post",
-        headers: {
-            'Accept': 'application/json;charset=utf-8',
-            'Content-Type': 'application/json;charset=utf-8'
-        },
+        url: "Employee/Insert",
+        data: employee,
+        //headers: {
+        //    'Accept': 'application/json;charset=utf-8',
+        //    'Content-Type': 'application/json;charset=utf-8'
+        //},
         //contentType: "application/json;",
-        url: "https://localhost:7100/api/employee/insert",
-        dataType: "json",
+        //url: "https://localhost:7100/api/employee/insert",
+        /*  dataType: "json",*/
         //async: false,
-        data: JSON.stringify(employee),
     }).done((result) => {
         Swal.fire({
             icon: 'success',
@@ -104,17 +108,20 @@ function Update() {
     employee.hiringDate = new Date(hiringDate).toISOString();
     //console.log(employee);
     $.ajax({
-        type: "put",
-        headers: {
-            'Accept': 'application/json;charset=utf-8',
-            'Content-Type': 'application/json;charset=utf-8'
-        },
-        url: "https://localhost:7100/api/employee/update",
-        dataType: "json",
-        //async: false,
-        data: JSON.stringify(
-            employee
-        ),
+        ype: "post",
+        url: "Employee/Insert",
+        data: employee,
+        //type: "put",
+        //headers: {
+        //    'Accept': 'application/json;charset=utf-8',
+        //    'Content-Type': 'application/json;charset=utf-8'
+        //},
+        //url: "https://localhost:7100/api/employee/update",
+        //dataType: "json",
+        ////async: false,
+        //data: JSON.stringify(
+        //    employee
+        //),
     }).done((result) => {
         //console.log(result);
         Swal.fire({
@@ -137,7 +144,7 @@ function Update() {
 
 
 //Delete
-function Delete(data) {
+function Delete(guid) {
     Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -149,15 +156,25 @@ function Delete(data) {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: `https://localhost:7100/api/employee/${data}`,
-                type: "DELETE"
+                url: "employee/delete/" + guid,
+                dataSrc: "data",
+                dataType: "JSON"
             }).done((result) => {
                 console.log(result);
-                Swal.fire(
-                    'Deleted!',
-                    'Your file has been deleted.',
-                    'success'
-                )
+                if (result.code == 500) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Failed to delete data',
+
+                    });
+                } else {
+                    Swal.fire(
+                        'Deleted!',
+                        'Your file has been deleted.',
+                        'success'
+                    )
+                }
                 $('#tabelEmployee').DataTable().ajax.reload();
             }).fail((error) => {
                 Swal.fire({
@@ -174,7 +191,8 @@ function Delete(data) {
 $(document).ready(function () {
     let dataEmployee = $("#tabelEmployee").DataTable({
         ajax: {
-            url: "https://localhost:7100/api/employee",
+            //url: "https://localhost:7100/api/employee",
+            url: "Employee/GetAll",
             dataSrc: "data",
             dataType: "JSON"
         },
