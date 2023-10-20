@@ -13,7 +13,7 @@ namespace API.Controllers
     //API route
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "manager, admin")]
     public class RoleController : ControllerBase
     {
         private readonly IRoleRepository _roleRepository;

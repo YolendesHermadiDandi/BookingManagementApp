@@ -108,7 +108,7 @@ function Update() {
     employee.hiringDate = new Date(hiringDate).toISOString();
     //console.log(employee);
     $.ajax({
-        ype: "post",
+        type: "post",
         url: "Employee/Insert",
         data: employee,
         //type: "put",
@@ -141,8 +141,6 @@ function Update() {
         $('#tabelEmployee').DataTable().ajax.reload();
     });
 }
-
-
 //Delete
 function Delete(guid) {
     Swal.fire({
@@ -192,7 +190,7 @@ $(document).ready(function () {
     let dataEmployee = $("#tabelEmployee").DataTable({
         ajax: {
             //url: "https://localhost:7100/api/employee",
-            url: "Employee/GetAll",
+            url: "/Employee/GetAll",
             dataSrc: "data",
             dataType: "JSON"
         },

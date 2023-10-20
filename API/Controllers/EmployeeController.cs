@@ -12,9 +12,9 @@ using System.Net;
 namespace API.Controllers
 {
     //API route
+    [Authorize(Roles = "manager, user")]
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -31,7 +31,6 @@ namespace API.Controllers
 
 
         [HttpGet("Details")]
-        [Authorize(Roles = "manager, admin")]
         public IActionResult GetDetails()
         {
             var employee = _employeeRepository.GetAll();

@@ -1,11 +1,15 @@
 ﻿using API.DTOs.Employee;
 using API.Models;
 using Client.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol;
 
 namespace Client.Controllers
 {
+    //[Authorize]
+    [Authorize(Roles = "admin, manager")]
+
     public class EmployeeController : Controller
     {
         private readonly IEmployeeRepository repository;
@@ -19,6 +23,7 @@ namespace Client.Controllers
         {
             return View();
         }
+
 
         public async Task<JsonResult> GetAll()
         {
@@ -86,8 +91,11 @@ namespace Client.Controllers
 
         }
 
+        
+        
 
-     
+
+
 
     }
 }

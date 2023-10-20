@@ -250,13 +250,13 @@ namespace API.Controllers
             }
         }
 
-        [HttpGet("Login")]
+        [HttpPost("Login")]
         [AllowAnonymous]
-        public IActionResult Login(string email, string password)
+        public IActionResult Login(LoginAccountDto login)
         {
             try
             {
-                var existingEmployee = _employeeRepository.GetEmail(email);
+                var existingEmployee = _employeeRepository.GetEmail(login.Email);
                 if (existingEmployee is null)
                 {
                     return NotFound(new ResponseErrorHandler
@@ -269,7 +269,7 @@ namespace API.Controllers
 
                 var existingEmployeeAccount = _accountRepository.GetByGuid(existingEmployee.Guid);
 
-                if (!HashHandler.VerifyPassword(password, existingEmployeeAccount.Password))
+                if (!HashHandler.VerifyPassword(login.Password, existingEmployeeAccount.Password))
                 {
                     return Ok(new ResponseOkHandler<string>("PASSWORD SALAH"));
                 }
